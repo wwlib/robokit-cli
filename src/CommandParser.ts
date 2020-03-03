@@ -201,13 +201,31 @@ export default class CommandParser extends EventEmitter {
                     }
                 }
                 break;
-            default:
-                var profileId: string = command + ' ' + args.join(' ');
-                var activeProfile: Profile = this._appModel.profiles.setActiveProfile(profileId);
-                if (activeProfile) {
-                    result = `current profile set to: ${activeProfile.id}`;
+            case 'robot':
+                var configId: string = args.join(' ');
+                if (configId) {
+                    var activeConfig: RobotConfig = this._appModel.robotConfigs.setActiveRobotConfig(configId);
+                    result = `current robot config set to: ${activeConfig.id}`;
                     this._appModel.saveConfig();
+                } else {
+                    let choices: string[] = this._appModel.robotConfigs.getRobotConfigIds();
+                    choices.push(CANCEL_OPTION);
+                    result = {
+                        type: 'list',
+                        name: 'mainInput',
+                        message: 'Set which robot?',
+                        choices: choices,
+                        filter: function (val: any) {
+                            if (val === CANCEL_OPTION) {
+                                return '';
+                            } else {
+                                return `set robot ${val}`;
+                            }
+                        }
+                    }
                 }
+                break;
+            default:
                 break;
         }
         return result;
@@ -376,7 +394,7 @@ export default class CommandParser extends EventEmitter {
     parseEditCommand(command: string, args: string[]): any {
         let result: any = '';
         let key: string = '';
-        let value: string ='';
+        let value: string = '';
         switch (command) {
             case 'profile':
                 key = args[0];

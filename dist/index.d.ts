@@ -2,24 +2,24 @@
 // Dependencies for this module:
 //   ../events
 
-declare module 'node-cli' {
-    import Model from 'node-cli/model/Model';
-    import CommandParser, { help } from 'node-cli/CommandParser';
-    import CommandResponse, { CommandState } from 'node-cli/CommandResponse';
-    import Profiles from 'node-cli/model/Profiles';
-    import Profile from 'node-cli/model/Profile';
-    import Config from 'node-cli/model/Config';
-    import { moveFileIfItExists, moveFilesThatExist } from 'node-cli/utils/MoveFilesThatExist';
+declare module 'robokit-cli' {
+    import Model from 'robokit-cli/model/Model';
+    import CommandParser, { help } from 'robokit-cli/CommandParser';
+    import CommandResponse, { CommandState } from 'robokit-cli/CommandResponse';
+    import Profiles from 'robokit-cli/model/Profiles';
+    import Profile from 'robokit-cli/model/Profile';
+    import Config from 'robokit-cli/model/Config';
+    import { moveFileIfItExists, moveFilesThatExist } from 'robokit-cli/utils/MoveFilesThatExist';
     export { Model, CommandParser, help, CommandResponse, CommandState, Profiles, Profile, Config, moveFileIfItExists, moveFilesThatExist, };
 }
 
-declare module 'node-cli/model/Model' {
+declare module 'robokit-cli/model/Model' {
     import { EventEmitter } from "events";
-    import Config from "node-cli/model/Config";
-    import Profiles from 'node-cli/model/Profiles';
-    import Profile from 'node-cli/model/Profile';
-    import RobotConfig from "node-cli/model/RobotConfig";
-    import RobotConfigs from "node-cli/model/RobotConfigs";
+    import Config from "robokit-cli/model/Config";
+    import Profiles from 'robokit-cli/model/Profiles';
+    import Profile from 'robokit-cli/model/Profile';
+    import RobotConfig from "robokit-cli/model/RobotConfig";
+    import RobotConfigs from "robokit-cli/model/RobotConfigs";
     export default class Model extends EventEmitter {
         config: Config;
         profiles: Profiles;
@@ -36,11 +36,11 @@ declare module 'node-cli/model/Model' {
     }
 }
 
-declare module 'node-cli/CommandParser' {
+declare module 'robokit-cli/CommandParser' {
     import { EventEmitter } from 'events';
-    import Model from 'node-cli/model/Model';
-    import Profile from 'node-cli/model/Profile';
-    import RobotConfig from 'node-cli/model/RobotConfig';
+    import Model from 'robokit-cli/model/Model';
+    import Profile from 'robokit-cli/model/Profile';
+    import RobotConfig from 'robokit-cli/model/RobotConfig';
     export const help: any;
     export default class CommandParser extends EventEmitter {
         constructor(appModel: Model);
@@ -60,7 +60,7 @@ declare module 'node-cli/CommandParser' {
     }
 }
 
-declare module 'node-cli/CommandResponse' {
+declare module 'robokit-cli/CommandResponse' {
     export enum CommandState {
         OK = "OK",
         NOK = "NOK",
@@ -85,8 +85,8 @@ declare module 'node-cli/CommandResponse' {
     }
 }
 
-declare module 'node-cli/model/Profiles' {
-    import Profile from 'node-cli/model/Profile';
+declare module 'robokit-cli/model/Profiles' {
+    import Profile from 'robokit-cli/model/Profile';
     export default class Profiles {
         static DEFAULT_ID: string;
         profileMap: any;
@@ -105,7 +105,7 @@ declare module 'node-cli/model/Profiles' {
     }
 }
 
-declare module 'node-cli/model/Profile' {
+declare module 'robokit-cli/model/Profile' {
     export enum ProfileProperties {
         profileId = "profileId",
         romPort = "romPort",
@@ -135,7 +135,7 @@ declare module 'node-cli/model/Profile' {
     }
 }
 
-declare module 'node-cli/model/Config' {
+declare module 'robokit-cli/model/Config' {
     import { EventEmitter } from "events";
     export default class Config extends EventEmitter {
         constructor();
@@ -148,12 +148,12 @@ declare module 'node-cli/model/Config' {
     }
 }
 
-declare module 'node-cli/utils/MoveFilesThatExist' {
+declare module 'robokit-cli/utils/MoveFilesThatExist' {
     export function moveFileIfItExists(filePath: string): Promise<void>;
     export function moveFilesThatExist(filePaths: string[]): Promise<void>;
 }
 
-declare module 'node-cli/model/RobotConfig' {
+declare module 'robokit-cli/model/RobotConfig' {
     export enum RobotConfigProperties {
         configId = "configId",
         type = "type",
@@ -174,8 +174,8 @@ declare module 'node-cli/model/RobotConfig' {
     }
 }
 
-declare module 'node-cli/model/RobotConfigs' {
-    import RobotConfig from 'node-cli/model/RobotConfig';
+declare module 'robokit-cli/model/RobotConfigs' {
+    import RobotConfig from 'robokit-cli/model/RobotConfig';
     export default class RobotConfigs {
         static DEFAULT_ID: string;
         configMap: any;
