@@ -1,0 +1,9 @@
+**/tsconfig.json
+**/webpack.config.js
+.eslintrc.json
+.gitignore
+.npmignore
+docs
+hide
+node_modules
+src

@@ -1,0 +1,33 @@
+{
+    "activeProfileId": "Default",
+    "profiles": [
+        {
+            "profileId": "Default",
+            "romPort": 7160,
+            "clientId": "user",
+            "clientSecret": "password",
+            "nluDefault": "simple",
+            "nluLUISEndpoint": "",
+            "nluLUISAppId": "",
+            "nluLUISSubscriptionKey": "",
+            "nluDialogflowClientToken": "",
+            "nluDialogflowProjectId": "",
+            "nluDialogflowPrivateKey": "",
+            "nluDialogflowClientEmail": "",
+            "neo4jUrl": "",
+            "neo4jUser": "",
+            "neo4jPassword": ""
+        }
+    ],
+    "activeRobotConfig": "Default",
+    "robotConfigs": [
+        {
+            "configId": "Default",
+            "type": "robokit",
+            "ip":  "192.168.1.100",
+            "serialName": "",
+            "email": "",
+            "password": ""
+        }
+    ]
+}

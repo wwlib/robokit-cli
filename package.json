@@ -1,0 +1,59 @@
+{
+  "name": "robokit-cli",
+  "version": "0.0.1",
+  "description": "Description\n    A command line tool (REPL) for controlling robokit robots.",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "bin": {
+    "robokit-cli": "./bin/robokit-cli.js"
+  },
+  "scripts": {
+    "test": "jest",
+    "build": "npm run clean && tsc -p tsconfig.build.json && webpack",
+    "webpack": "webpack",
+    "start": "node bin/robokit-cli.js -r",
+    "clean": "shx rm -rf lib dist",
+    "version": "./version.sh $npm_package_version",
+    "test-version": "./version.sh $npm_package_version"
+  },
+  "author": "Andrew Rapo",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "chalk": "^2.4.2",
+    "cli-spinner": "^0.2.10",
+    "cli-table3": "^0.5.1",
+    "crypto-random-string": "^3.0.1",
+    "dts-bundle": "^0.7.3",
+    "fs-extra": "^8.1.0",
+    "inquirer": "^7.0.0",
+    "inquirer-command-prompt": "0.0.23",
+    "jsonfile": "^5.0.0",
+    "marked": "^0.8.0",
+    "marked-terminal": "3.2.0",
+    "meow": "^5.0.0",
+    "osenv": "^0.1.5",
+    "prettyjson": "^1.2.1",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.4",
+    "shelljs": "^0.8.3",
+    "url-join": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^25.1.3",
+    "@types/node": "^8.0.47",
+    "@types/prettyjson": "^0.0.29",
+    "eslint": "^6.5.1",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jest": "^22.17.0",
+    "jest": "^25.1.0",
+    "shx": "^0.3.2",
+    "source-map-loader": "^0.2.4",
+    "ts-jest": "^25.2.1",
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.8.3",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
+  }
+}
