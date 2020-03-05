@@ -47,6 +47,22 @@ export default class Profile {
         }
     }
 
+    get port(): number {
+        return this.data.port;
+    }
+
+    get nluDefault(): string {
+        return this.data.nluDefault;
+    }
+
+    get clientId(): string {
+        return this.data.clientId;
+    }
+
+    get clientSecret(): string {
+        return this.data.clientSecret;
+    }
+
     // getProperty(key: string): string {
     //     return this.data[key];
     // }

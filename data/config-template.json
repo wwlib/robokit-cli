@@ -24,10 +24,56 @@
         {
             "configId": "Default",
             "type": "robokit",
-            "ip":  "192.168.1.100",
+            "ip": "192.168.1.100",
             "serialName": "",
             "email": "",
             "password": ""
+        }
+    ],
+    "romCommands": [
+        {
+            "name": "LookAt: Left",
+            "keyCode": "l",
+            "type": "lookAt",
+            "data": {
+                "angle": 0.5
+            }
+        },
+        {
+            "name": "LookAt: Center",
+            "keyCode": "c",
+            "type": "lookAt",
+            "data": {
+                "vector": [
+                    1,
+                    0,
+                    0.5
+                ]
+            }
+        },
+        {
+            "name": "LookAt: Right",
+            "keyCode": "r",
+            "type": "lookAt",
+            "data": {
+                "angle": -0.5
+            }
+        },
+        {
+            "name": "LookAt: Behind",
+            "keyCode": "b",
+            "type": "lookAt",
+            "data": {
+                "angle": 3.14159
+            }
+        },
+        {
+            "name": "TTS: Hello",
+            "keyCode": "h",
+            "type": "tts",
+            "data": {
+                "text": "hello world"
+            }
         }
     ]
 }

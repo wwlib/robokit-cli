@@ -13,6 +13,12 @@ export default class RobotConfig {
     static get propertyKeys(): string[];
     get id(): string;
     set id(configId: string);
+    get name(): string;
+    get type(): string;
+    get ip(): string;
+    get serialName(): string;
+    get email(): string;
+    get password(): string;
     setProperty(key: string, value: string): void;
     get json(): any;
 }

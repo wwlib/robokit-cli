@@ -8,14 +8,14 @@ inquirer.registerPrompt(
   require('inquirer-command-prompt'),
 );
 
-const { Model } = require('../dist');
 const {
+  Model,
   CommandParser,
   help,
   CommandResponse,
   CommandState,
   JobWatcher,
-} = require('../dist');
+} = require('../lib'); //require('../dist');
 
 let commandParser;
 let jobWatcher;

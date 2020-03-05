@@ -20,4 +20,6 @@ export default class CommandParser extends EventEmitter {
     parseEditCommand(command: string, args: string[]): any;
     parseNewCommand(command: string, args: string[]): Promise<any>;
     parseListCommand(command: string, args: string[]): string;
+    parseConnectCommand(robotConfigId: string, args: string[]): Promise<any>;
+    parseDisconnectCommand(robotConfigId: string, args: string[]): Promise<any>;
 }

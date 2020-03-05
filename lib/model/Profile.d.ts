@@ -22,6 +22,10 @@ export default class Profile {
     static get propertyKeys(): string[];
     get id(): string;
     set id(profileId: string);
+    get port(): number;
+    get nluDefault(): string;
+    get clientId(): string;
+    get clientSecret(): string;
     setProperty(key: string, value: string): void;
     get json(): any;
 }

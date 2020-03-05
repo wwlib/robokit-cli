@@ -5,6 +5,7 @@ import RobotConfig from './model/RobotConfig';
 import CommandResponse, { CommandState } from './CommandResponse';
 import ProfileHelper from './ProfileHelper';
 import RobotConfigHelper from './RobotConfigHelper';
+import SayHelper from './SayHelper';
 
 const path = require('path');
 const util = require('util');
@@ -73,18 +74,23 @@ export default class CommandParser extends EventEmitter {
 
     parseCommand(input: string): Promise<any> {
         return new Promise<any>((resolve, reject) => {
+            const firstChar: string = input.substr(0, 1);
+            const secondChar: string = input.substr(1, 1);
+            if (input.length > 1 && firstChar === '!' && secondChar !== ' ') {
+                input = `${firstChar} ${input.substr(1)}`;
+            }
             const tokens: string[] = input.split(' ');
             const command: string = tokens[0];
             let subCommand: string = '';
             const args = tokens.slice(1);
+            const argsText = args.join(' ');
             let cr: CommandResponse;
-            // let profileHelper: ProfileHelper;
 
             switch (command) {
                 case '$':
                 case 'exec':
                 case 'shell':
-                    this.execShellCommand(args.join(' '))
+                    this.execShellCommand(argsText)
                         .then((result: any) => {
                             cr = new CommandResponse(input, result);
                             resolve(cr);
@@ -93,6 +99,13 @@ export default class CommandParser extends EventEmitter {
                             cr = new CommandResponse(input, error, CommandState.NOK);
                             reject(cr);
                         });
+                    break;
+                case '!':
+                    if (argsText) {
+                        console.log(`command: ${argsText}`);
+                        this._appModel.command(argsText);
+                    }
+                    resolve('OK');
                     break;
                 case 'clear':
                     this.execShellCommand('clear')
@@ -143,8 +156,16 @@ export default class CommandParser extends EventEmitter {
                 case 'profile':
                     resolve(this.parseSetCommand('profile', []));
                     break;
+                case 'robot':
+                    resolve(this.parseSetCommand('robot', []));
+                    break;
                 case 'profiles':
                     resolve(this.parseListCommand('profiles', []));
+                case 'robots':
+                    resolve(this.parseListCommand('robots', []));
+                    break;
+                case 'commands':
+                    resolve(this.parseListCommand('commands', []));
                     break;
                 case 'list':
                     subCommand = args[0];
@@ -156,6 +177,43 @@ export default class CommandParser extends EventEmitter {
                 case 'set':
                     subCommand = args[0];
                     resolve(this.parseSetCommand(subCommand, args.slice(1)));
+                    break;
+                case 'connect':
+                    subCommand = args[0];
+                    this.parseConnectCommand(subCommand, args.slice(1))
+                        .then((result: string) => {
+                            resolve(result);
+                        })
+                        .catch((error: any) => {
+                            reject(prettyjson.render(error, prettyjsonColors));
+                        });
+                    break;
+                case 'disconnect':
+                    subCommand = args[0];
+                    this.parseDisconnectCommand(subCommand, args.slice(1))
+                        .then((result: string) => {
+                            resolve(result);
+                        })
+                        .catch((error: any) => {
+                            reject(prettyjson.render(error, prettyjsonColors));
+                        });
+                    break;
+                case 'say':
+                    if (argsText) {
+                        console.log(`say: ${argsText}`);
+                        this._appModel.say(argsText);
+                        resolve('OK');
+                    } else {
+                        const sayHelper: SayHelper = new SayHelper(this._appModel);
+                        sayHelper.loop()
+                            .then((sayResult: string) => {
+                                resolve(sayResult);
+                            });
+                    }
+                    break;
+                case 'debug':
+                    this._appModel.debug();
+                    resolve('OK');
                     break;
                 case 'help':
                     resolve(prettyjson.render(help, prettyjsonColors));
@@ -554,9 +612,32 @@ export default class CommandParser extends EventEmitter {
                     result += `${chalk.green(configId)}\n`;
                 });
                 break;
+            case 'commands':
+                this._appModel.romCommands.commandNamesWithKeyCodes.forEach((commandName: string) => {
+                    result += `${chalk.green(commandName)}\n`;
+                });
+                break;
             default:
                 break;
         }
         return result;
+    }
+
+    parseConnectCommand(robotConfigId: string, args: string[]): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            this._appModel.connect(robotConfigId);
+            let result: any = '';
+            result = `${chalk.green('connected:')} ${robotConfigId}`;
+            resolve(result);
+        });
+    }
+
+    parseDisconnectCommand(robotConfigId: string, args: string[]): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            this._appModel.disconnect(robotConfigId);
+            let result: any = '';
+            result = `${chalk.green('disconnected:')} ${robotConfigId}`;
+            resolve(result);
+        });
     }
 }

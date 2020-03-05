@@ -5,6 +5,9 @@ import Profiles from './Profiles';
 import Profile from './Profile';
 import RobotConfig from "./RobotConfig";
 import RobotConfigs from "./RobotConfigs";
+import { RomCommand, RomCommands } from 'robokit-rom';
+
+import RobotManager from '../robot/RobotManager';
 
 let configDataTemplate: any = require('../../data/config-template.json');
 
@@ -13,6 +16,7 @@ export default class Model extends EventEmitter {
     public config: Config;
     public profiles: Profiles = new Profiles(configDataTemplate);
     public robotConfigs: RobotConfigs = new RobotConfigs(configDataTemplate);
+    public romCommands: RomCommands = new RomCommands(); 
 
     constructor() {
         super();
@@ -25,10 +29,12 @@ export default class Model extends EventEmitter {
                 // this.saveConfig();
                 this.profiles = new Profiles(configDataTemplate);
                 this.robotConfigs = new RobotConfigs(configDataTemplate);
+                this.romCommands.initWithData(configDataTemplate.romCommands);
             } else {
                 // this.initWithData(this.config.data);
                 this.profiles = new Profiles(this.config.data);
                 this.robotConfigs = new RobotConfigs(this.config.data);
+                this.romCommands.initWithData(this.config.data.romCommands);
             }
             this.emit('ready', this);
         });
@@ -55,6 +61,7 @@ export default class Model extends EventEmitter {
         this.config.data = {
             ...this.profiles.json,
             ...this.robotConfigs.json,
+            romCommands: this.romCommands.json,
         }
         this.config.save((err: any) => {
             if (err) {
@@ -78,6 +85,76 @@ export default class Model extends EventEmitter {
             }
             this.emit('updateModel', this);
         });
+    }
+
+    //// Robot
+
+    connect(robotConfigId: string = '') {
+        let config: RobotConfig | undefined = this.robotConfigs.getActiveRobotConfig();
+        if (robotConfigId) {
+            config = this.robotConfigs.getRobotConfigWithId(robotConfigId);
+        }
+        const profile: Profile = this.profiles.getActiveProfile();
+        if (config && profile) {
+            RobotManager.Instance.connectWithProfileAndRobotConfig(profile, config);
+        } else {
+            console.log(`Model: connect: invalid profile and/or robot config`);
+        }
+    }
+
+    disconnect(robotConfigId: string = '') {
+        let config: RobotConfig | undefined = this.robotConfigs.getActiveRobotConfig();
+        if (robotConfigId) {
+            config = this.robotConfigs.getRobotConfigWithId(robotConfigId);
+        }
+        if (config) {
+            RobotManager.Instance.disconnectWithRobotConfig(config);
+        } else {
+            console.log(`Model: disconnect: invalid robot config`);
+        }
+    }
+
+    say(text: string, robotConfigId: string = '') {
+        if (text.length === 1) {
+            this.command(text, robotConfigId);
+        } else {
+            let config: RobotConfig | undefined = this.robotConfigs.getActiveRobotConfig();
+            if (robotConfigId) {
+                config = this.robotConfigs.getRobotConfigWithId(robotConfigId);
+            }
+            if (config) {
+                RobotManager.Instance.sayWithRobotConfigAndText(config, text);
+            } else {
+                console.log(`Model: say: invalid robot config`);
+            }
+        }
+    }
+
+    command(text: string, robotConfigId: string = '') {
+        let config: RobotConfig | undefined = this.robotConfigs.getActiveRobotConfig();
+        if (robotConfigId) {
+            config = this.robotConfigs.getRobotConfigWithId(robotConfigId);
+        }
+        if (config) {
+            if (text.length === 1) {
+                const romCommand: RomCommand | undefined = this.romCommands.getCommandWithKeyCode(text);
+                if (romCommand) {
+                    RobotManager.Instance.commandWithRobotConfigAndRomCommand(config, romCommand);
+                }
+            } else {
+                const romCommand: RomCommand | undefined = this.romCommands.getCommandWithName(text);
+                if (romCommand) {
+                    RobotManager.Instance.commandWithRobotConfigAndRomCommand(config, romCommand);
+                }
+            }
+            
+        } else {
+            console.log(`Model: say: invalid robot config`);
+        }
+    }
+
+    debug() {
+        RobotManager.Instance.debug();
     }
 
     getAppVerison(): string {

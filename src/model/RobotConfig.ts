@@ -38,6 +38,31 @@ export default class RobotConfig {
         }
     }
 
+    get name(): string {
+        return this.data.configId
+    }
+
+    get type(): string {
+        return this.data.type
+    }
+
+    get ip(): string {
+        return this.data.ip
+    }
+
+    get serialName(): string {
+        return this.data.serialName
+    }
+
+    get email(): string {
+        return this.data.email
+    }
+
+    get password(): string {
+        return this.data.password
+    }
+
+
     // getProperty(key: string): string {
     //     return this.data[key];
     // }
