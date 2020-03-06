@@ -23,6 +23,7 @@ const CANCEL_OPTION: string = '(cancel)';
 
 export const help: any = {
     '$ <shell command>': 'executes the specified shell command',
+    '! <rom command>': 'sends the specified rom commmand to targeted robot(s)',
     'load profile <path>': 'loads the specified profile json',
     'show profile <profileId>': 'shows the specified profile',
     'show robot <configId>': 'shows the specified robot config',
@@ -32,13 +33,17 @@ export const help: any = {
     'new profile': 'create a new profile (must save)',
     'new robot': 'create a new robot config (must save)',
     'save config': 'saves the loaded profiles and robot configs',
-    'list profiles': 'lists the loaded profiles',
-    'list robots': 'lists the loaded robot configs',
-    'profiles': 'lists the loaded profiles',
-    'robots': 'lists the loaded robot configs',
-    'set profile <id>': 'sets the active profile',
-    'set robot <id>': 'sets the active robot config',
+    '[list] profiles': 'lists the loaded profiles',
+    '[list] robots': 'lists the loaded robot configs',
+    'commands': 'lists the defined rom commands',
+    '[set] profile <id>': 'sets the active profile',
+    '[set] robot <id>': 'sets the active robot config',
+    'connect': 'connects the targeted robot(s)',
+    'disconnect': 'disconnects the targeted robot(s)',
+    'start <skill>': 'starts the specified skill',
+    'say <text>': 'sends a tts rom command with the specified text',
     'config': 'shows current cli configuration',
+    'status': 'shows current cli status',
     'clear': 'clears the console',
     'quit': 'quit',
     'q': 'quit',
@@ -70,6 +75,10 @@ export default class CommandParser extends EventEmitter {
             configFile: this._appModel.config.configFile,
         }
         return prettyjson.render(config, prettyjsonColors);
+    }
+
+    getStatus(): string {
+        return prettyjson.render(this._appModel.status(), prettyjsonColors);
     }
 
     parseCommand(input: string): Promise<any> {
@@ -174,6 +183,9 @@ export default class CommandParser extends EventEmitter {
                 case 'config':
                     resolve(this.getConfig());
                     break;
+                case 'status':
+                    resolve(this.getStatus());
+                    break;
                 case 'set':
                     subCommand = args[0];
                     resolve(this.parseSetCommand(subCommand, args.slice(1)));
@@ -198,6 +210,15 @@ export default class CommandParser extends EventEmitter {
                             reject(prettyjson.render(error, prettyjsonColors));
                         });
                     break;
+                case 'start':
+                    subCommand = args[0];
+                    if (subCommand) {
+                        this._appModel.start(subCommand);
+                        resolve('OK');
+                    } else {
+                        resolve('Skill not found');
+                    }
+                    break;
                 case 'say':
                     if (argsText) {
                         console.log(`say: ${argsText}`);
@@ -210,10 +231,6 @@ export default class CommandParser extends EventEmitter {
                                 resolve(sayResult);
                             });
                     }
-                    break;
-                case 'debug':
-                    this._appModel.debug();
-                    resolve('OK');
                     break;
                 case 'help':
                     resolve(prettyjson.render(help, prettyjsonColors));
@@ -405,7 +422,7 @@ export default class CommandParser extends EventEmitter {
                         type: 'list',
                         name: 'mainInput',
                         message: 'Show what?',
-                        choices: ['profile', CANCEL_OPTION],
+                        choices: ['profile', 'robot', CANCEL_OPTION],
                         filter: function (val: any) {
                             if (val === CANCEL_OPTION) {
                                 return '';
@@ -533,6 +550,19 @@ export default class CommandParser extends EventEmitter {
                 }
                 break;
             default:
+                result = {
+                    type: 'list',
+                    name: 'mainInput',
+                    message: 'Edit what?',
+                    choices: ['profile', 'robot', CANCEL_OPTION],
+                    filter: function (val: any) {
+                        if (val === CANCEL_OPTION) {
+                            return '';
+                        } else {
+                            return `edit ${val}`;
+                        }
+                    }
+                }
                 break;
         }
         return result;

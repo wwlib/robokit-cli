@@ -22,7 +22,12 @@ export default class Model extends EventEmitter {
     disconnect(robotConfigId?: string): void;
     say(text: string, robotConfigId?: string): void;
     command(text: string, robotConfigId?: string): void;
-    debug(): void;
+    start(skillName: string): void;
+    status(): {
+        robotCount: number;
+        robotNames: string[];
+        ensembleSkills: any;
+    };
     getAppVerison(): string;
     dispose(): void;
 }

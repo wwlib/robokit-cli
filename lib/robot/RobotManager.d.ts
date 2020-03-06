@@ -11,5 +11,10 @@ export default class RobotManager {
     disconnectWithRobotConfig(robotConfig: RobotConfig): void;
     sayWithRobotConfigAndText(robotConfig: RobotConfig, text: string): void;
     commandWithRobotConfigAndRomCommand(robotConfig: RobotConfig, command: RomCommand): void;
-    debug(): void;
+    start(skillName: string): void;
+    status(): {
+        robotCount: number;
+        robotNames: string[];
+        ensembleSkills: any;
+    };
 }

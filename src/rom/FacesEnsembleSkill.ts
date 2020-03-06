@@ -1,24 +1,47 @@
-import { Robot, RobotIntentData, Hub, EnsembleSkill, EnsembleSkillManager, RobotDataStreamEvent } from 'robokit-rom';
+import { Robot, RobotIntentData, Hub, EnsembleSkill, EnsembleSkillManager, RobotDataStreamEvent, RomCommand } from 'robokit-rom';
 
-export default class ReceptionEnsembleSkill extends EnsembleSkill {
+export default class FacesEnsembleSkill extends EnsembleSkill {
 
     private _dataStreamEventHandler: any = this.onDataStreamEvent.bind(this);
 
     constructor(id: string, launchIntent: string) {
         super (id, launchIntent);
+        this.running = true;
     }
 
     addHub(hub: Hub): void {
         super.addHub(hub);
-        hub.on('faceGained', this._dataStreamEventHandler);
+        hub.on('dataStreamEvent', this._dataStreamEventHandler);
     }
 
     onDataStreamEvent(event: RobotDataStreamEvent) {
-        console.log(`onDataStreamEvent: ${event.robotId} -> ${event.type}`);
+        if (event && event.type === 'faceGained') {
+            console.log(`${this.id}: onDataStreamEvent: ${event.robotId} -> ${event.type}`);
+            console.log(JSON.stringify(event, null, 2));
+            const entities: any = event.data;
+            const entity: any = entities[0];
+            const worldCoords = entity.WorldCoords
+            const command: RomCommand = new RomCommand('lookAt', 'lookAt', {
+                vector: [
+                    worldCoords[0],
+                    worldCoords[1],
+                    worldCoords[2]
+                  ]
+            });
+            const command2: RomCommand = new RomCommand('emoji', 'tts', {
+                text: "<anim name='emoji-clock-hf-01' nonBlocking='true'/>.",
+            });
+            console.log(command.json);
+            this.hubs.forEach((hub: Hub) => {
+                console.log(`sending command to: ${hub.robot.name}`);
+                hub.robot.sendCommand(command);
+                // hub.robot.sendCommand(command2);
+            });
+        }
     }
 
     launch(data: RobotIntentData) :void {
-    //     console.log(`ReceptionEnsembleSkill: launch: running: ${this.running}`);
+    //     console.log(`FacesEnsembleSkill: launch: running: ${this.running}`);
     //     if (!this.running) {
     //         this.running = true;
     //         let hubArray: Hub[] = this.getShuffledArrayOfHubs();
@@ -38,7 +61,7 @@ export default class ReceptionEnsembleSkill extends EnsembleSkill {
     //                 if (robot.requester) {
     //                     let p = robot.requester.expression.say(timePrompt).complete;
     //                     p.then( () => {
-    //                         // console.log(`ReceptionEnsembleSkill: launch: done`);
+    //                         // console.log(`FacesEnsembleSkill: launch: done`);
     //                         this.running = false;
     //                     })
     //                     .catch((result: any) => {
@@ -55,7 +78,7 @@ export default class ReceptionEnsembleSkill extends EnsembleSkill {
     //                         // let p = robot.requester.play.say(`<break size='3.0'/><anim cat='shift' layers='body' nonBlocking='true'/><anim cat='happy' layers='screen' filter='&(eye-only)' nonBlocking='true' />.Yeah, that's right.`).complete;
     //                         let p = robot.requester.expression.say(prompt).complete;
     //                         p.then( () => {
-    //                             // console.log(`ReceptionEnsembleSkill: launch: done`);
+    //                             // console.log(`FacesEnsembleSkill: launch: done`);
     //                         })
     //                         .catch((result: any) => {
     //                             robot.updateRobotStatusMessages(JSON.stringify(result, null, 2))

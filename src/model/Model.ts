@@ -16,7 +16,7 @@ export default class Model extends EventEmitter {
     public config: Config;
     public profiles: Profiles = new Profiles(configDataTemplate);
     public robotConfigs: RobotConfigs = new RobotConfigs(configDataTemplate);
-    public romCommands: RomCommands = new RomCommands(); 
+    public romCommands: RomCommands = new RomCommands();
 
     constructor() {
         super();
@@ -147,14 +147,18 @@ export default class Model extends EventEmitter {
                     RobotManager.Instance.commandWithRobotConfigAndRomCommand(config, romCommand);
                 }
             }
-            
+
         } else {
             console.log(`Model: say: invalid robot config`);
         }
     }
 
-    debug() {
-        RobotManager.Instance.debug();
+    start(skillName: string) {
+        RobotManager.Instance.start(skillName);
+    }
+
+    status() {
+        return RobotManager.Instance.status();
     }
 
     getAppVerison(): string {
@@ -163,6 +167,6 @@ export default class Model extends EventEmitter {
 
     dispose(): void {
         configDataTemplate = undefined;
-        delete(this.config);// = null;
+        delete (this.config);// = null;
     }
 }

@@ -32,6 +32,7 @@ robokit-cli --command help
 
 ```
 $ <shell command>:               executes the specified shell command
+! <rom command>:                 sends the specified rom commmand to targeted robot(s)
 load profile <path>:             loads the specified profile json
 show profile <profileId>:        shows the specified profile
 show robot <configId>:           shows the specified robot config
@@ -41,13 +42,17 @@ edit robot <property> <value>:   edit a robot config property (must save)
 new profile:                     create a new profile (must save)
 new robot:                       create a new robot config (must save)
 save config:                     saves the loaded profiles and robot configs
-list profiles:                   lists the loaded profiles
-list robots:                     lists the loaded robot configs
-profiles:                        lists the loaded profiles
-robots:                          lists the loaded robot configs
-set profile <id>:                sets the active profile
-set robot <id>:                  sets the active robot config
+[list] profiles:                 lists the loaded profiles
+[list] robots:                   lists the loaded robot configs
+commands:                        lists the defined rom commands
+[set] profile <id>:              sets the active profile
+[set] robot <id>:                sets the active robot config
+connect:                         connects the targeted robot(s)
+disconnect:                      disconnects the targeted robot(s)
+start <skill>:                   starts the specified skill
+say <text>:                      sends a tts rom command with the specified text
 config:                          shows current cli configuration
+status:                          shows current cli status
 clear:                           clears the console
 quit:                            quit
 q:                               quit

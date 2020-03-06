@@ -1,5 +1,5 @@
 import { RobotIntentData, Hub, EnsembleSkill, RobotDataStreamEvent } from 'robokit-rom';
-export default class ReceptionEnsembleSkill extends EnsembleSkill {
+export default class FacesEnsembleSkill extends EnsembleSkill {
     private _dataStreamEventHandler;
     constructor(id: string, launchIntent: string);
     addHub(hub: Hub): void;
