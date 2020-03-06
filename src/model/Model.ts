@@ -15,7 +15,7 @@ export default class Model extends EventEmitter {
 
     public config: Config;
     public profiles: Profiles = new Profiles(configDataTemplate);
-    public robotConfigs: RobotConfigs = new RobotConfigs(configDataTemplate);
+    // public robotConfigs: RobotConfigs = new RobotConfigs(configDataTemplate);
     public romCommands: RomCommands = new RomCommands();
 
     constructor() {
@@ -28,13 +28,17 @@ export default class Model extends EventEmitter {
                 // this.initWithData(this.config.data);
                 // this.saveConfig();
                 this.profiles = new Profiles(configDataTemplate);
-                this.robotConfigs = new RobotConfigs(configDataTemplate);
+                RobotManager.Instance.initRobotConfigs(configDataTemplate.robotConfigs);
                 this.romCommands.initWithData(configDataTemplate.romCommands);
+                RobotManager.Instance.initRobotGroups(configDataTemplate.robotGroups);
+                RobotManager.Instance.activeGroupName = configDataTemplate.activeGroupName;
             } else {
                 // this.initWithData(this.config.data);
                 this.profiles = new Profiles(this.config.data);
-                this.robotConfigs = new RobotConfigs(this.config.data);
+                RobotManager.Instance.initRobotConfigs(this.config.data.robotConfigs);
                 this.romCommands.initWithData(this.config.data.romCommands);
+                RobotManager.Instance.initRobotGroups(this.config.data.robotGroups);
+                RobotManager.Instance.activeGroupName = this.config.data.activeGroupName;
             }
             this.emit('ready', this);
         });
@@ -47,10 +51,6 @@ export default class Model extends EventEmitter {
         return this.profiles.getActiveProfile();
     }
 
-    getActiveRobotConfig(): RobotConfig {
-        return this.robotConfigs.getActiveRobotConfig();
-    }
-
     get json(): any {
         let result: any = {}
         return result;
@@ -60,7 +60,9 @@ export default class Model extends EventEmitter {
         // console.log(`saveConfig: `, this.profiles.json);
         this.config.data = {
             ...this.profiles.json,
-            ...this.robotConfigs.json,
+            robotConfigs: RobotManager.Instance.robotConfigs.json,
+            robotGroups: RobotManager.Instance.robotGroups.json,
+            activeGroupName: RobotManager.Instance.activeGroupName,
             romCommands: this.romCommands.json,
         }
         this.config.save((err: any) => {
@@ -74,14 +76,18 @@ export default class Model extends EventEmitter {
         this.config.load((err: any, obj: any) => {
             if (err || !this.config.data) {
                 console.log(`Model: Config not found. Using template.`);
-                // this.config.data = configDataTemplate;
-                // this.initWithData(this.config.data);
                 this.profiles = new Profiles(configDataTemplate);
-                this.robotConfigs = new RobotConfigs(configDataTemplate);
+                RobotManager.Instance.initRobotConfigs(configDataTemplate.robotConfigs);
+                this.romCommands.initWithData(configDataTemplate.romCommands);
+                RobotManager.Instance.initRobotGroups(configDataTemplate.robotGroups);
+                RobotManager.Instance.activeGroupName = configDataTemplate.activeGroupName;
+
             } else {
-                // this.initWithData(this.config.data);
                 this.profiles = new Profiles(this.config.data);
-                this.robotConfigs = new RobotConfigs(this.config.data);
+                RobotManager.Instance.initRobotConfigs(this.config.data.robotConfigs);
+                this.romCommands.initWithData(this.config.data.romCommands);
+                RobotManager.Instance.initRobotGroups(this.config.data.robotGroups);
+                RobotManager.Instance.activeGroupName = this.config.data.activeGroupName;
             }
             this.emit('updateModel', this);
         });
@@ -90,67 +96,67 @@ export default class Model extends EventEmitter {
     //// Robot
 
     connect(robotConfigId: string = '') {
-        let config: RobotConfig | undefined = this.robotConfigs.getActiveRobotConfig();
-        if (robotConfigId) {
-            config = this.robotConfigs.getRobotConfigWithId(robotConfigId);
-        }
-        const profile: Profile = this.profiles.getActiveProfile();
-        if (config && profile) {
-            RobotManager.Instance.connectWithProfileAndRobotConfig(profile, config);
-        } else {
-            console.log(`Model: connect: invalid profile and/or robot config`);
-        }
+        // let config: RobotConfig | undefined = RobotManager.Instance.robotConfigs.getActiveRobotConfig();
+        // if (robotConfigId) {
+        //     config = RobotManager.Instance.robotConfigs.getRobotConfigWithId(robotConfigId);
+        // }
+        // const profile: Profile = this.profiles.getActiveProfile();
+        // if (config && profile) {
+        //     RobotManager.Instance.connectWithProfileAndRobotConfig(profile, config);
+        // } else {
+        //     console.log(`Model: connect: invalid profile and/or robot config`);
+        // }
     }
 
     disconnect(robotConfigId: string = '') {
-        let config: RobotConfig | undefined = this.robotConfigs.getActiveRobotConfig();
-        if (robotConfigId) {
-            config = this.robotConfigs.getRobotConfigWithId(robotConfigId);
-        }
-        if (config) {
-            RobotManager.Instance.disconnectWithRobotConfig(config);
-        } else {
-            console.log(`Model: disconnect: invalid robot config`);
-        }
+        // let config: RobotConfig | undefined = RobotManager.Instance.robotConfigs.getActiveRobotConfig();
+        // if (robotConfigId) {
+        //     config = RobotManager.Instance.robotConfigs.getRobotConfigWithId(robotConfigId);
+        // }
+        // if (config) {
+        //     RobotManager.Instance.disconnectWithRobotConfig(config);
+        // } else {
+        //     console.log(`Model: disconnect: invalid robot config`);
+        // }
     }
 
     say(text: string, robotConfigId: string = '') {
-        if (text.length === 1) {
-            this.command(text, robotConfigId);
-        } else {
-            let config: RobotConfig | undefined = this.robotConfigs.getActiveRobotConfig();
-            if (robotConfigId) {
-                config = this.robotConfigs.getRobotConfigWithId(robotConfigId);
-            }
-            if (config) {
-                RobotManager.Instance.sayWithRobotConfigAndText(config, text);
-            } else {
-                console.log(`Model: say: invalid robot config`);
-            }
-        }
+        // if (text.length === 1) {
+        //     this.command(text, robotConfigId);
+        // } else {
+        //     let config: RobotConfig | undefined = RobotManager.Instance.robotConfigs.getActiveRobotConfig();
+        //     if (robotConfigId) {
+        //         config = RobotManager.Instance.robotConfigs.getRobotConfigWithId(robotConfigId);
+        //     }
+        //     if (config) {
+        //         RobotManager.Instance.sayWithRobotConfigAndText(config, text);
+        //     } else {
+        //         console.log(`Model: say: invalid robot config`);
+        //     }
+        // }
     }
 
     command(text: string, robotConfigId: string = '') {
-        let config: RobotConfig | undefined = this.robotConfigs.getActiveRobotConfig();
-        if (robotConfigId) {
-            config = this.robotConfigs.getRobotConfigWithId(robotConfigId);
-        }
-        if (config) {
-            if (text.length === 1) {
-                const romCommand: RomCommand | undefined = this.romCommands.getCommandWithKeyCode(text);
-                if (romCommand) {
-                    RobotManager.Instance.commandWithRobotConfigAndRomCommand(config, romCommand);
-                }
-            } else {
-                const romCommand: RomCommand | undefined = this.romCommands.getCommandWithName(text);
-                if (romCommand) {
-                    RobotManager.Instance.commandWithRobotConfigAndRomCommand(config, romCommand);
-                }
-            }
+        // let config: RobotConfig | undefined = RobotManager.Instance.robotConfigs.getActiveRobotConfig();
+        // if (robotConfigId) {
+        //     config = RobotManager.Instance.robotConfigs.getRobotConfigWithId(robotConfigId);
+        // }
+        // if (config) {
+        //     if (text.length === 1) {
+        //         const romCommand: RomCommand | undefined = this.romCommands.getCommandWithKeyCode(text);
+        //         if (romCommand) {
+        //             RobotManager.Instance.commandWithRobotConfigAndRomCommand(config, romCommand);
+        //         }
+        //     } else {
+        //         const romCommand: RomCommand | undefined = this.romCommands.getCommandWithName(text);
+        //         if (romCommand) {
+        //             RobotManager.Instance.commandWithRobotConfigAndRomCommand(config, romCommand);
+        //         }
+        //     }
 
-        } else {
-            console.log(`Model: say: invalid robot config`);
-        }
+        // } else {
+        //     console.log(`Model: say: invalid robot config`);
+        // }
     }
 
     start(skillName: string) {

@@ -19,7 +19,6 @@
             "neo4jPassword": ""
         }
     ],
-    "activeRobotConfig": "Default",
     "robotConfigs": [
         {
             "configId": "Default",
@@ -30,6 +29,16 @@
             "password": ""
         }
     ],
+    "robotGroups": [
+        {
+            "name": "@aj",
+            "robots": [
+                "azure",
+                "jade"
+            ]
+        }
+    ],
+    "activeGroupName": "",
     "romCommands": [
         {
             "name": "LookAt: Left",

@@ -63,9 +63,9 @@ export default class Profile {
         return this.data.clientSecret;
     }
 
-    // getProperty(key: string): string {
-    //     return this.data[key];
-    // }
+    getProperty(key: string): string {
+        return this.data[key];
+    }
 
     setProperty(key: string, value: string) {
         let isValidProperty: boolean = Profile.propertyKeys.indexOf(key) != -1;

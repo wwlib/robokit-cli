@@ -10,11 +10,11 @@ inquirer.registerPrompt(
 
 const {
   Model,
+  RobotManager,
   CommandParser,
   help,
   CommandResponse,
   CommandState,
-  JobWatcher,
 } = require('../lib'); //require('../dist');
 
 let commandParser;
@@ -31,7 +31,7 @@ function mainPrompt(input) {
     result = {
       type: 'command',
       name: 'mainInput',
-      message: `${input || `[${model.profiles.activeProfileId} : ${model.robotConfigs.activeRobotConfigID}]`}`,
+      message: `${input || `[${model.profiles.activeProfileId} : ${RobotManager.Instance.activeGroupName}]`}`,
       autoCompletion: helpCommands,
     };
   }

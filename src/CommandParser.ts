@@ -6,6 +6,7 @@ import CommandResponse, { CommandState } from './CommandResponse';
 import ProfileHelper from './ProfileHelper';
 import RobotConfigHelper from './RobotConfigHelper';
 import SayHelper from './SayHelper';
+import RobotManager from './robot/RobotManager';
 
 const path = require('path');
 const util = require('util');
@@ -33,11 +34,14 @@ export const help: any = {
     'new profile': 'create a new profile (must save)',
     'new robot': 'create a new robot config (must save)',
     'save config': 'saves the loaded profiles and robot configs',
-    '[list] profiles': 'lists the loaded profiles',
-    '[list] robots': 'lists the loaded robot configs',
+    'list [profiles | robots | commands | groups]': '',
+    'profiles': 'lists the loaded profiles',
+    'robots': 'lists the loaded robot configs',
     'commands': 'lists the defined rom commands',
-    '[set] profile <id>': 'sets the active profile',
-    '[set] robot <id>': 'sets the active robot config',
+    'groups': 'lists the defined robot groups',
+    'set [profile | group] <id>': '',
+    'profile <id>': 'sets the active profile',
+    'group <id>': 'sets the active robot group',
     'connect': 'connects the targeted robot(s)',
     'disconnect': 'disconnects the targeted robot(s)',
     'start <skill>': 'starts the specified skill',
@@ -64,10 +68,6 @@ export default class CommandParser extends EventEmitter {
 
     get profile(): Profile {
         return this._appModel.getActiveProfile();
-    }
-
-    get robotConfig(): RobotConfig {
-        return this._appModel.getActiveRobotConfig();
     }
 
     getConfig(): string {
@@ -165,8 +165,8 @@ export default class CommandParser extends EventEmitter {
                 case 'profile':
                     resolve(this.parseSetCommand('profile', []));
                     break;
-                case 'robot':
-                    resolve(this.parseSetCommand('robot', []));
+                case 'group':
+                    resolve(this.parseSetCommand('group', []));
                     break;
                 case 'profiles':
                     resolve(this.parseListCommand('profiles', []));
@@ -175,6 +175,9 @@ export default class CommandParser extends EventEmitter {
                     break;
                 case 'commands':
                     resolve(this.parseListCommand('commands', []));
+                    break;
+                case 'groups':
+                    resolve(this.parseListCommand('groups', []));
                     break;
                 case 'list':
                     subCommand = args[0];
@@ -276,25 +279,25 @@ export default class CommandParser extends EventEmitter {
                     }
                 }
                 break;
-            case 'robot':
-                var configId: string = args.join(' ');
-                if (configId) {
-                    var activeConfig: RobotConfig = this._appModel.robotConfigs.setActiveRobotConfig(configId);
-                    result = `current robot config set to: ${activeConfig.id}`;
+            case 'group':
+                let groupName: string = args.join(' ');
+                if (groupName) {
+                    RobotManager.Instance.activeGroupName = groupName;
+                    result = `current group set to: ${RobotManager.Instance.activeGroupName}`;
                     this._appModel.saveConfig();
                 } else {
-                    let choices: string[] = this._appModel.robotConfigs.getRobotConfigIds();
+                    let choices: string[] = RobotManager.Instance.robotGroupNames;
                     choices.push(CANCEL_OPTION);
                     result = {
                         type: 'list',
                         name: 'mainInput',
-                        message: 'Set which robot?',
+                        message: 'Set which group?',
                         choices: choices,
                         filter: function (val: any) {
                             if (val === CANCEL_OPTION) {
                                 return '';
                             } else {
-                                return `set robot ${val}`;
+                                return `set group ${val}`;
                             }
                         }
                     }
@@ -394,9 +397,9 @@ export default class CommandParser extends EventEmitter {
                     const configId = args.join(' ');
                     var config: RobotConfig | undefined;
                     if (configId) {
-                        config = this._appModel.robotConfigs.getRobotConfigWithId(configId);
+                        config = RobotManager.Instance.robotConfigs.getRobotConfigWithId(configId);
                     } else {
-                        let choices: string[] = this._appModel.robotConfigs.getRobotConfigIds();
+                        let choices: string[] = RobotManager.Instance.robotConfigs.getRobotConfigIds();
                         choices.push(CANCEL_OPTION);
                         result = {
                             type: 'list',
@@ -466,106 +469,111 @@ export default class CommandParser extends EventEmitter {
         });
     }
 
-    parseEditCommand(command: string, args: string[]): any {
-        let result: any = '';
-        let key: string = '';
-        let value: string = '';
-        switch (command) {
-            case 'profile':
-                key = args[0];
-                value = args.slice(1).join(' ');
-                if (key) {
-                    if (value) {
-                        this._appModel.profiles.setProfileProperty(key, value);
-                        result = prettyjson.render(this.profile.json, prettyjsonColors);
-                    } else {
-                        result = {
-                            type: 'input',
-                            name: 'mainInput',
-                            message: 'What is the property value?',
-                            filter: function (val: any) {
-                                if (val === CANCEL_OPTION) {
-                                    return '';
-                                } else {
-                                    return `edit profile ${key} ${val}`;
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    var choices: string[] = Profile.propertyKeys;
-                    choices.push(CANCEL_OPTION);
-                    result = {
-                        type: 'list',
-                        name: 'mainInput',
-                        message: 'Edit which profile property?',
-                        choices: choices,
-                        filter: function (val: any) {
-                            if (val === CANCEL_OPTION) {
-                                return '';
-                            } else {
-                                return `edit profile ${val}`;
-                            }
-                        }
-                    }
-                }
-                break;
-            case 'robot':
-                key = args[0];
-                value = args.slice(1).join(' ');
-                if (key) {
-                    if (value) {
-                        this._appModel.robotConfigs.setRobotConfigProperty(key, value);
-                        result = prettyjson.render(this.robotConfig.json, prettyjsonColors);
-                    } else {
-                        result = {
-                            type: 'input',
-                            name: 'mainInput',
-                            message: 'What is the property value?',
-                            filter: function (val: any) {
-                                if (val === CANCEL_OPTION) {
-                                    return '';
-                                } else {
-                                    return `edit robot ${key} ${val}`;
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    var choices: string[] = RobotConfig.propertyKeys;
-                    choices.push(CANCEL_OPTION);
-                    result = {
-                        type: 'list',
-                        name: 'mainInput',
-                        message: 'Edit which robot config property?',
-                        choices: choices,
-                        filter: function (val: any) {
-                            if (val === CANCEL_OPTION) {
-                                return '';
-                            } else {
-                                return `edit robot ${val}`;
-                            }
-                        }
-                    }
-                }
-                break;
-            default:
-                result = {
-                    type: 'list',
-                    name: 'mainInput',
-                    message: 'Edit what?',
-                    choices: ['profile', 'robot', CANCEL_OPTION],
-                    filter: function (val: any) {
-                        if (val === CANCEL_OPTION) {
-                            return '';
+    parseEditCommand(command: string, args: string[]): Promise<any> {
+        return new Promise<any>((resolve: any, reject: any) => {
+            let result: any = '';
+            let key: string = '';
+            let value: string = '';
+            switch (command) {
+                case 'profile':
+                    key = args[0];
+                    value = args.slice(1).join(' ');
+                    if (key) {
+                        if (value) {
+                            this._appModel.profiles.setProfileProperty(key, value);
+                            result = prettyjson.render(this.profile.json, prettyjsonColors);
                         } else {
-                            return `edit ${val}`;
+                            result = {
+                                type: 'input',
+                                name: 'mainInput',
+                                message: 'What is the property value?',
+                                default: this.profile.getProperty(key),
+                                filter: function (val: any) {
+                                    if (val === CANCEL_OPTION) {
+                                        return '';
+                                    } else {
+                                        return `edit profile ${key} ${val}`;
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        var choices: string[] = Profile.propertyKeys;
+                        choices.push(CANCEL_OPTION);
+                        result = {
+                            type: 'list',
+                            name: 'mainInput',
+                            message: 'Edit which profile property?',
+                            choices: choices,
+                            filter: function (val: any) {
+                                if (val === CANCEL_OPTION) {
+                                    return '';
+                                } else {
+                                    return `edit profile ${val}`;
+                                }
+                            }
                         }
                     }
-                }
-                break;
-        }
-        return result;
+                    resolve(result);
+                    break;
+                case 'robot':
+                    key = args[0];
+                    if (key) {
+                        const robotConfig: RobotConfig | undefined = RobotManager.Instance.robotConfigs.getRobotConfigWithId(key);
+                        if (robotConfig) {
+                            const robotConfigHelper = new RobotConfigHelper(robotConfig);
+                            robotConfigHelper.create()
+                                .then((newRobotConfigResult: RobotConfig) => {
+                                    if (newRobotConfigResult instanceof RobotConfig) {
+                                        this._appModel.saveConfig();
+                                        result = prettyjson.render(newRobotConfigResult.json, prettyjsonColors);
+                                    } else {
+                                        result = `${chalk.red(newRobotConfigResult)}`;
+                                    }
+                                    const cr = new CommandResponse('edit robot', result);
+                                    resolve(cr);
+                                });
+                        } else {
+                            const cr = new CommandResponse('edit robot', 'invalid robot config');
+                            resolve(cr);
+                        }
+                    } else {
+                        let choices: string[] = RobotManager.Instance.robotConfigs.getRobotConfigIds();
+                        choices.push(CANCEL_OPTION);
+                        result = {
+                            type: 'list',
+                            name: 'mainInput',
+                            message: 'Edit which robot config?',
+                            choices: choices,
+                            filter: function (val: any) {
+                                if (val === CANCEL_OPTION) {
+                                    return '';
+                                } else {
+                                    return `edit robot ${val}`;
+                                }
+                            }
+                        }
+                        resolve(result);
+                    }
+                    break;
+                default:
+                    result = {
+                        type: 'list',
+                        name: 'mainInput',
+                        message: 'Edit what?',
+                        choices: ['profile', 'robot', CANCEL_OPTION],
+                        filter: function (val: any) {
+                            if (val === CANCEL_OPTION) {
+                                return '';
+                            } else {
+                                return `edit ${val}`;
+                            }
+                        }
+                    }
+                    resolve(result);
+                    break;
+            }
+        });
     }
 
     parseNewCommand(command: string, args: string[]): Promise<any> {
@@ -598,29 +606,18 @@ export default class CommandParser extends EventEmitter {
                     }
                     break;
                 case 'robot':
-                    const configId: string = args.join(' ');
-                    if (configId) {
-                        const newConfig = this._appModel.robotConfigs.newRobotConfig(configId);
-                        if (newConfig) {
-                            result = prettyjson.render(this.robotConfig.json, prettyjsonColors);
-                        } else {
-                            result = `${chalk.red('Error making new robot config.')}`;
-                        }
-                        resolve(result);
-                    } else {
-                        const robotConfigHelper = new RobotConfigHelper(this._appModel);
-                        robotConfigHelper.create()
-                            .then((newRobotConfigResult: RobotConfig) => {
-                                if (newRobotConfigResult instanceof RobotConfig) {
-                                    this._appModel.saveConfig();
-                                    result = prettyjson.render(newRobotConfigResult.json, prettyjsonColors);
-                                } else {
-                                    result = `${chalk.red(newRobotConfigResult)}`;
-                                }
-                                const cr = new CommandResponse('new robot', result);
-                                resolve(cr);
-                            });
-                    }
+                    const robotConfigHelper = new RobotConfigHelper();
+                    robotConfigHelper.create()
+                        .then((newRobotConfigResult: RobotConfig) => {
+                            if (newRobotConfigResult instanceof RobotConfig) {
+                                this._appModel.saveConfig();
+                                result = prettyjson.render(newRobotConfigResult.json, prettyjsonColors);
+                            } else {
+                                result = `${chalk.red(newRobotConfigResult)}`;
+                            }
+                            const cr = new CommandResponse('new robot', result);
+                            resolve(cr);
+                        });
                     break;
                 default:
                     resolve(`${chalk.keyword('orange')('incomplete command:')} new ${command}`);
@@ -638,13 +635,19 @@ export default class CommandParser extends EventEmitter {
                 });
                 break;
             case 'robots':
-                this._appModel.robotConfigs.getRobotConfigIds().forEach((configId: string) => {
+                RobotManager.Instance.robotConfigs.getRobotConfigIds().forEach((configId: string) => {
                     result += `${chalk.green(configId)}\n`;
                 });
                 break;
             case 'commands':
                 this._appModel.romCommands.commandNamesWithKeyCodes.forEach((commandName: string) => {
                     result += `${chalk.green(commandName)}\n`;
+                });
+                break;
+            case 'groups':
+                RobotManager.Instance.robotGroups.json.forEach((groupData: any) => {
+                    const line: string = `${groupData.name} -> [${groupData.robots.join(', ')}]`
+                    result += `${chalk.green(line)}\n`;
                 });
                 break;
             default:

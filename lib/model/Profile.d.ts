@@ -26,6 +26,7 @@ export default class Profile {
     get nluDefault(): string;
     get clientId(): string;
     get clientSecret(): string;
+    getProperty(key: string): string;
     setProperty(key: string, value: string): void;
     get json(): any;
 }

@@ -1,4 +1,5 @@
 import Model from './model/Model';
+import RobotManager from './robot/RobotManager';
 import CommandParser, { help } from './CommandParser';
 import CommandResponse, { CommandState } from './CommandResponse';
 import Profiles from './model/Profiles';
@@ -8,6 +9,7 @@ import { moveFileIfItExists, moveFilesThatExist } from './utils/MoveFilesThatExi
 
 export {
   Model,
+  RobotManager,
   CommandParser,
   help,
   CommandResponse,

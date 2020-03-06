@@ -29,7 +29,7 @@ export default class RobotConfig {
     }
 
     get id(): string {
-        return this.data.configId;
+        return this.data.configId || '';
     }
 
     set id(configId: string) {
@@ -39,27 +39,27 @@ export default class RobotConfig {
     }
 
     get name(): string {
-        return this.data.configId
+        return this.data.configId || '';
     }
 
     get type(): string {
-        return this.data.type
+        return this.data.type || '';
     }
 
     get ip(): string {
-        return this.data.ip
+        return this.data.ip || '';
     }
 
     get serialName(): string {
-        return this.data.serialName
+        return this.data.serialName || '';
     }
 
     get email(): string {
-        return this.data.email
+        return this.data.email || '';
     }
 
     get password(): string {
-        return this.data.password
+        return this.data.password || '';
     }
 
 
