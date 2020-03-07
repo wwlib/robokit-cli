@@ -1,5 +1,4 @@
-import Model from './model/Model';
-
+import RobotManager from './robot/RobotManager';
 const inquirer = require('inquirer');
 
 /*
@@ -22,10 +21,8 @@ const inquirer = require('inquirer');
 
 export default class ProfileHelper {
 
-  private _appModel: Model;
 
-  constructor(appModel: Model) {
-    this._appModel = appModel;
+  constructor() {
   }
 
   create(): Promise<any> {
@@ -61,7 +58,7 @@ export default class ProfileHelper {
       inquirer.prompt(questions).then((result: any) => {
         // console.log(result);
         if (result.confirm === 'yes') {
-          const newProfile = this._appModel.profiles.newProfile(result.profileId);
+          const newProfile = RobotManager.Instance.profiles.newProfile(result.profileId);
           if (newProfile) {
             newProfile.data.romPort = 7160;
             newProfile.data.clientId = result.clientId;

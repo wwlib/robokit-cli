@@ -31,7 +31,7 @@ function mainPrompt(input) {
     result = {
       type: 'command',
       name: 'mainInput',
-      message: `${input || `[${model.profiles.activeProfileId} : ${RobotManager.Instance.activeGroupName}]`}`,
+      message: `${input || `[${RobotManager.Instance.profiles.activeProfileId} : ${RobotManager.Instance.activeGroupName}]`}`,
       autoCompletion: helpCommands,
     };
   }

@@ -1,7 +1,5 @@
-import Model from './model/Model';
 export default class SayHelper {
-    private _appModel;
-    constructor(appModel: Model);
+    constructor();
     sayPrompt(): {
         type: string;
         name: string;

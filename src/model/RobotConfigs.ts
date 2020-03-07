@@ -5,43 +5,49 @@ export default class RobotConfigs {
 
     static DEFAULT_ID = 'Default';
 
-    public configMap: any = {};
+    private _configMap: Map<string, RobotConfig>;
 
     constructor() {
+        this._configMap = new Map<string, RobotConfig>();
     }
 
     initWithData(data: any[]) {
         if (data && Array.isArray(data)) {
             data.forEach((configData: any) => {
-                this.configMap[configData.configId] = new RobotConfig(configData);
+                const config: RobotConfig = new RobotConfig(configData);
+                this._configMap.set(configData.configId, config);
             });
         } else {
             console.log('RobotConfigs: initWithData: invalid data.');
         }
     }
 
-    getRobotConfigWithId(id: string): RobotConfig | undefined {
-        return this.configMap[id];
+    get configList(): RobotConfig[] {
+        return Array.from(this._configMap.values());
     }
 
-    getDefaultRobotConfig(): RobotConfig {
-        return this.configMap[RobotConfigs.DEFAULT_ID];
+    getRobotConfigWithId(id: string): RobotConfig | undefined {
+        return this._configMap.get(id);
+    }
+
+    getDefaultRobotConfig(): RobotConfig | undefined {
+        return this._configMap.get(RobotConfigs.DEFAULT_ID);
     }
 
     getRobotConfigIds(): string[] {
-        const configKeys: string[] = Object.keys(this.configMap).sort();
+        const configKeys: string[] = Array.from(this._configMap.keys()).sort();
         return configKeys;
     }
 
     setRobotConfigProperty(configId: string, key: string, value: string) {
         let config: RobotConfig | undefined = this.getRobotConfigWithId(configId);
         if (config) {
-            if (key === RobotConfig.ID_KEY && !this.configMap[value]) {
+            if (key === RobotConfig.ID_KEY && !this._configMap.get(value)) {
                 let oldId: string = config.id;
                 let newId: string = value;
-                delete (this.configMap[oldId]);
+                this._configMap.delete(oldId);
                 config.setProperty(key, newId);
-                this.configMap[newId] = config;
+                this._configMap.set(newId, config);
             } else {
                 config.setProperty(key, value);
             }
@@ -52,23 +58,23 @@ export default class RobotConfigs {
         if (data) {
             let config: RobotConfig = new RobotConfig(data);
             if (config.id) {
-                this.configMap[config.id] = config;
+                this._configMap.set(config.id, config);
             }
         }
     }
 
     addRobotConfig(config: RobotConfig) {
         if (config && config.id) {
-            this.configMap[config.id] = config;
+            this._configMap.set(config.id, config);
         }
     }
 
     newRobotConfig(configId: string): RobotConfig | undefined {
         let result: RobotConfig | undefined = undefined;
         let config: RobotConfig = new RobotConfig();
-        if (configId && !this.configMap[configId]) {
+        if (configId && !this._configMap.get(configId)) {
             config.id = configId
-            this.configMap[config.id] = config;
+            this._configMap.set(config.id, config);
             result = config;
         }
         return result;
@@ -78,15 +84,18 @@ export default class RobotConfigs {
         if (id == RobotConfigs.DEFAULT_ID || !this.getRobotConfigWithId(id)) {
             // noop
         } else {
-            delete this.configMap[id]
+            this._configMap.delete(id);
         }
     }
 
     get json(): any {
         let result: any = [];
-        const configKeys: string[] = Object.keys(this.configMap).sort();
+        const configKeys: string[] = Array.from(this._configMap.keys()).sort();
         configKeys.forEach(key => {
-            result.push(this.configMap[key].json);
+            const config: RobotConfig | undefined = this._configMap.get(key);
+            if (config) {
+                result.push(config.json);
+            }
         });
         return result;
     }

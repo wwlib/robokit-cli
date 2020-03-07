@@ -1,13 +1,10 @@
-import Model from './model/Model';
+import RobotManager from './robot/RobotManager';
 
 const inquirer = require('inquirer');
 
 export default class SayHelper {
 
-  private _appModel: Model;
-
-  constructor(appModel: Model) {
-    this._appModel = appModel;
+  constructor() {
   }
 
   sayPrompt() {
@@ -27,7 +24,7 @@ export default class SayHelper {
         if (result.sayInput === '') {
           resolve('okOK');
         } else {
-          this._appModel.say(result.sayInput);
+          RobotManager.Instance.say(result.sayInput);
           this.loop()
             .then((loopResult: string) => {
               resolve(loopResult);

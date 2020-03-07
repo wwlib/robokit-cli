@@ -78,7 +78,7 @@ export default class RobotConfigHelper {
           this._config.data.password = result.password;
           if (!this._editMode) {
             this._config.id = result.configId;
-            RobotManager.Instance.robotConfigs.addRobotConfig(this._config);
+            RobotManager.Instance.addRobotConfig(this._config);
           }
           resolve(this._config);
         } else {

@@ -1,17 +1,18 @@
 import Profile from './Profile';
 export default class Profiles {
     static DEFAULT_ID: string;
-    profileMap: any;
+    private _profileMap;
     activeProfileId: string;
-    constructor(data: any);
+    constructor();
+    initWithData(data: any): void;
     getProfileWithId(id: string): Profile | undefined;
-    getActiveProfile(): Profile;
-    getDefaultProfile(): Profile;
+    getActiveProfile(): Profile | undefined;
+    getDefaultProfile(): Profile | undefined;
     getProfileIds(): string[];
-    setActiveProfile(id: string): Profile;
+    setActiveProfile(id: string): Profile | undefined;
     setProfileProperty(key: string, value: string): void;
-    addProfile(data: any): Profile;
+    addProfile(data: any): Profile | undefined;
     newProfile(profileId: string, makeActiveProfile?: boolean): Profile | undefined;
-    deleteProfile(id: string): Profile;
+    deleteProfile(id: string): Profile | undefined;
     get json(): any;
 }

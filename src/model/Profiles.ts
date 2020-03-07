@@ -4,50 +4,60 @@ export default class Profiles {
 
     static DEFAULT_ID = 'Default';
 
-    public profileMap: any = {};
+    private _profileMap: Map<string, Profile>;
     public activeProfileId: string
 
-    constructor(data: any) {
-        this.activeProfileId = data.activeProfileId;
-        data.profiles.forEach((profileData: any) => {
-            this.profileMap[profileData.profileId] = new Profile(profileData);
-        });
+    constructor() {
+        this.activeProfileId = '';
+        this._profileMap = new Map<string, Profile>();
+    }
+
+    initWithData(data: any) {
+        if (data) {
+            this.activeProfileId = data.activeProfileId;
+            data.profiles.forEach((profileData: any) => {
+                const profile: Profile = new Profile(profileData);
+                this._profileMap.set(profileData.profileId, profile);
+            });
+        } else {
+            console.log('Profiles: initWithData: invalid data.');
+        }
     }
 
     getProfileWithId(id: string): Profile | undefined {
-        return this.profileMap[id];
+        return this._profileMap.get(id);
     }
 
-    getActiveProfile(): Profile {
-        return this.profileMap[this.activeProfileId];
+    getActiveProfile(): Profile | undefined {
+        return this._profileMap.get(this.activeProfileId);
     }
 
-    getDefaultProfile(): Profile {
+    getDefaultProfile(): Profile | undefined {
         this.activeProfileId = Profiles.DEFAULT_ID;
-        return this.profileMap[Profiles.DEFAULT_ID];
+        return this._profileMap.get(Profiles.DEFAULT_ID);
     }
 
     getProfileIds(): string[] {
-        const profileKeys: string[] = Object.keys(this.profileMap).sort();
+        const profileKeys: string[] = Array.from(this._profileMap.keys()).sort();
         return profileKeys;
     }
 
-    setActiveProfile(id: string): Profile {
-        if (this.profileMap[id]) {
+    setActiveProfile(id: string): Profile | undefined {
+        if (this._profileMap.get(id)) {
             this.activeProfileId = id;
         }
         return this.getActiveProfile();
     }
 
     setProfileProperty(key: string, value: string) {
-        let profile: Profile = this.getActiveProfile();
+        let profile: Profile | undefined = this.getActiveProfile();
         if (profile) {
-            if (key === Profile.ID_KEY && !this.profileMap[value]) {
+            if (key === Profile.ID_KEY && !this._profileMap.get(value)) {
                 let oldId: string = profile.id;
                 let newId: string = value;
-                delete(this.profileMap[oldId]);
+                this._profileMap.delete(oldId);
                 profile.setProperty(key, newId);
-                this.profileMap[newId] = profile;
+                this._profileMap.set(newId, profile);
                 this.activeProfileId = newId;
             } else {
                 profile.setProperty(key, value);
@@ -55,11 +65,11 @@ export default class Profiles {
         }
     }
 
-    addProfile(data: any): Profile {
-        let result: Profile = this.getActiveProfile();
+    addProfile(data: any): Profile | undefined {
+        let result: Profile | undefined = this.getActiveProfile();
         let profile: Profile = new Profile(data);
         if (profile.id) {
-            this.profileMap[profile.id] = profile;
+            this._profileMap.set(profile.id, profile);
             result = this.setActiveProfile(profile.id)
         }
         return result;
@@ -68,9 +78,9 @@ export default class Profiles {
     newProfile(profileId: string, makeActiveProfile: boolean = true): Profile | undefined {
         let result: Profile | undefined = undefined;
         let profile: Profile = new Profile();
-        if (profileId && !this.profileMap[profileId]) {
+        if (profileId && !this._profileMap.get(profileId)) {
             profile.id = profileId
-            this.profileMap[profile.id] = profile;
+            this._profileMap.set(profile.id, profile);
             result = profile;
             if (makeActiveProfile) {
               this.setActiveProfile(profile.id);
@@ -79,17 +89,17 @@ export default class Profiles {
         return result;
     }
 
-    deleteProfile(id: string): Profile {
-        let result: Profile = this.getActiveProfile();
+    deleteProfile(id: string): Profile | undefined {
+        let result: Profile | undefined = this.getActiveProfile();
         if (id == Profiles.DEFAULT_ID || !this.getProfileWithId(id)) {
             // noop
         } else {
-            delete this.profileMap[id]
+            this._profileMap.delete(id);
             if (id === this.activeProfileId) {
                 this.activeProfileId = '';
-                const profileKeys: string[] = Object.keys(this.profileMap).sort();
+                const profileKeys: string[] = Array.from(this._profileMap.keys()).sort();
                 profileKeys.forEach(key => {
-                    if (this.profileMap[key] && !this.activeProfileId) {
+                    if (this._profileMap.get(key) && !this.activeProfileId) {
                         this.activeProfileId = key;
                         result = this.setActiveProfile(this.activeProfileId);
                     }
@@ -106,9 +116,12 @@ export default class Profiles {
         let result: any = {}
         result.activeProfileId = this.activeProfileId;
         result.profiles = [];
-        const profileKeys: string[] = Object.keys(this.profileMap).sort();
+        const profileKeys: string[] = Array.from(this._profileMap.keys()).sort();
         profileKeys.forEach(key => {
-            result.profiles.push(this.profileMap[key].json);
+            const profile: Profile | undefined = this._profileMap.get(key);
+            if (profile) {
+                result.profiles.push(profile.json);
+            }
         });
         return result;
     }

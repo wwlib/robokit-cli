@@ -1,11 +1,12 @@
 import RobotConfig from './RobotConfig';
 export default class RobotConfigs {
     static DEFAULT_ID: string;
-    configMap: any;
+    private _configMap;
     constructor();
     initWithData(data: any[]): void;
+    get configList(): RobotConfig[];
     getRobotConfigWithId(id: string): RobotConfig | undefined;
-    getDefaultRobotConfig(): RobotConfig;
+    getDefaultRobotConfig(): RobotConfig | undefined;
     getRobotConfigIds(): string[];
     setRobotConfigProperty(configId: string, key: string, value: string): void;
     addRobotConfigWithData(data: any): void;

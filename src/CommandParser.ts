@@ -66,8 +66,8 @@ export default class CommandParser extends EventEmitter {
         this._appModel = appModel;
     }
 
-    get profile(): Profile {
-        return this._appModel.getActiveProfile();
+    get profile(): Profile | undefined {
+        return RobotManager.Instance.profiles.getActiveProfile();
     }
 
     getConfig(): string {
@@ -112,7 +112,7 @@ export default class CommandParser extends EventEmitter {
                 case '!':
                     if (argsText) {
                         console.log(`command: ${argsText}`);
-                        this._appModel.command(argsText);
+                        RobotManager.Instance.command(argsText);
                     }
                     resolve('OK');
                     break;
@@ -163,10 +163,10 @@ export default class CommandParser extends EventEmitter {
                     resolve(this.parseNewCommand(subCommand, args.slice(1)));
                     break;
                 case 'profile':
-                    resolve(this.parseSetCommand('profile', []));
+                    resolve(this.parseSetCommand('profile', args));
                     break;
                 case 'group':
-                    resolve(this.parseSetCommand('group', []));
+                    resolve(this.parseSetCommand('group', args));
                     break;
                 case 'profiles':
                     resolve(this.parseListCommand('profiles', []));
@@ -225,10 +225,10 @@ export default class CommandParser extends EventEmitter {
                 case 'say':
                     if (argsText) {
                         console.log(`say: ${argsText}`);
-                        this._appModel.say(argsText);
+                        RobotManager.Instance.say(argsText);
                         resolve('OK');
                     } else {
-                        const sayHelper: SayHelper = new SayHelper(this._appModel);
+                        const sayHelper: SayHelper = new SayHelper();
                         sayHelper.loop()
                             .then((sayResult: string) => {
                                 resolve(sayResult);
@@ -258,11 +258,15 @@ export default class CommandParser extends EventEmitter {
             case 'profile':
                 var profileId: string = args.join(' ');
                 if (profileId) {
-                    var activeProfile: Profile = this._appModel.profiles.setActiveProfile(profileId);
-                    result = `current profile set to: ${activeProfile.id}`;
+                    var activeProfile: Profile | undefined = RobotManager.Instance.profiles.setActiveProfile(profileId);
+                    if (activeProfile) {
+                        result = `current profile set to: ${activeProfile.id}`;
+                    } else {
+                        result = `current profile set to: undefined`;
+                    }
                     this._appModel.saveConfig();
                 } else {
-                    let choices: string[] = this._appModel.profiles.getProfileIds();
+                    let choices: string[] = RobotManager.Instance.profiles.getProfileIds();
                     choices.push(CANCEL_OPTION);
                     result = {
                         type: 'list',
@@ -319,7 +323,6 @@ export default class CommandParser extends EventEmitter {
                     if (err) {
                         console.log(err);
                     } else {
-                        const activeProfile: Profile = this._appModel.profiles.addProfile(obj);
                         this._appModel.saveConfig();
                     }
                 });
@@ -335,13 +338,13 @@ export default class CommandParser extends EventEmitter {
                 const profileId = args.join(' ');
 
                 if (profileId) {
-                    this._appModel.profiles.deleteProfile(profileId);
-                    this._appModel.profiles.getProfileIds().forEach((profileId: string) => {
+                    RobotManager.Instance.profiles.deleteProfile(profileId);
+                    RobotManager.Instance.profiles.getProfileIds().forEach((profileId: string) => {
                         result += `${chalk.green(profileId)}]\n`;
                     });
                     result += `Remember to ${chalk.green('save profiles')}`;
                 } else {
-                    let choices: string[] = this._appModel.profiles.getProfileIds();
+                    let choices: string[] = RobotManager.Instance.profiles.getProfileIds();
                     choices.push(CANCEL_OPTION);
                     result = {
                         type: 'list',
@@ -370,9 +373,9 @@ export default class CommandParser extends EventEmitter {
                     const profileId = args.join(' ');
                     var profile: Profile | undefined;
                     if (profileId) {
-                        profile = this._appModel.profiles.getProfileWithId(profileId);
+                        profile = RobotManager.Instance.profiles.getProfileWithId(profileId);
                     } else {
-                        let choices: string[] = this._appModel.profiles.getProfileIds();
+                        let choices: string[] = RobotManager.Instance.profiles.getProfileIds();
                         choices.push(CANCEL_OPTION);
                         result = {
                             type: 'list',
@@ -478,41 +481,45 @@ export default class CommandParser extends EventEmitter {
                 case 'profile':
                     key = args[0];
                     value = args.slice(1).join(' ');
-                    if (key) {
-                        if (value) {
-                            this._appModel.profiles.setProfileProperty(key, value);
-                            result = prettyjson.render(this.profile.json, prettyjsonColors);
+                    if (this.profile) {
+                        if (key) {
+                            if (value) {
+                                RobotManager.Instance.profiles.setProfileProperty(key, value);
+                                result = prettyjson.render(this.profile.json, prettyjsonColors);
+                            } else {
+                                result = {
+                                    type: 'input',
+                                    name: 'mainInput',
+                                    message: 'What is the property value?',
+                                    default: this.profile.getProperty(key),
+                                    filter: function (val: any) {
+                                        if (val === CANCEL_OPTION) {
+                                            return '';
+                                        } else {
+                                            return `edit profile ${key} ${val}`;
+                                        }
+                                    }
+                                }
+                            }
                         } else {
+                            var choices: string[] = Profile.propertyKeys;
+                            choices.push(CANCEL_OPTION);
                             result = {
-                                type: 'input',
+                                type: 'list',
                                 name: 'mainInput',
-                                message: 'What is the property value?',
-                                default: this.profile.getProperty(key),
+                                message: 'Edit which profile property?',
+                                choices: choices,
                                 filter: function (val: any) {
                                     if (val === CANCEL_OPTION) {
                                         return '';
                                     } else {
-                                        return `edit profile ${key} ${val}`;
+                                        return `edit profile ${val}`;
                                     }
                                 }
                             }
                         }
                     } else {
-                        var choices: string[] = Profile.propertyKeys;
-                        choices.push(CANCEL_OPTION);
-                        result = {
-                            type: 'list',
-                            name: 'mainInput',
-                            message: 'Edit which profile property?',
-                            choices: choices,
-                            filter: function (val: any) {
-                                if (val === CANCEL_OPTION) {
-                                    return '';
-                                } else {
-                                    return `edit profile ${val}`;
-                                }
-                            }
-                        }
+                        result = `no active profile.`
                     }
                     resolve(result);
                     break;
@@ -581,28 +588,33 @@ export default class CommandParser extends EventEmitter {
             let result: any = '';
             switch (command) {
                 case 'profile':
-                    const profileId: string = args.join(' ');
-                    if (profileId) {
-                        const newProfile = this._appModel.profiles.newProfile(profileId);
-                        if (newProfile) {
-                            result = prettyjson.render(this.profile.json, prettyjsonColors);
+                    if (this.profile) {
+                        const profileId: string = args.join(' ');
+                        if (profileId) {
+                            const newProfile = RobotManager.Instance.profiles.newProfile(profileId);
+                            if (newProfile) {
+                                result = prettyjson.render(this.profile.json, prettyjsonColors);
+                            } else {
+                                result = `${chalk.red('Error making new profile.')}`;
+                            }
+                            resolve(result);
                         } else {
-                            result = `${chalk.red('Error making new profile.')}`;
+                            const profileHelper = new ProfileHelper();
+                            profileHelper.create()
+                                .then((newProfileResult: Profile) => {
+                                    if (newProfileResult instanceof Profile) {
+                                        this._appModel.saveConfig();
+                                        result = prettyjson.render(newProfileResult.json, prettyjsonColors);
+                                    } else {
+                                        result = `${chalk.red(newProfileResult)}`;
+                                    }
+                                    const cr = new CommandResponse('new profile', result);
+                                    resolve(cr);
+                                });
                         }
-                        resolve(result);
                     } else {
-                        const profileHelper = new ProfileHelper(this._appModel);
-                        profileHelper.create()
-                            .then((newProfileResult: Profile) => {
-                                if (newProfileResult instanceof Profile) {
-                                    this._appModel.saveConfig();
-                                    result = prettyjson.render(newProfileResult.json, prettyjsonColors);
-                                } else {
-                                    result = `${chalk.red(newProfileResult)}`;
-                                }
-                                const cr = new CommandResponse('new profile', result);
-                                resolve(cr);
-                            });
+                        const cr = new CommandResponse('new profile', `no active profile.`);
+                        resolve(cr);
                     }
                     break;
                 case 'robot':
@@ -630,7 +642,7 @@ export default class CommandParser extends EventEmitter {
         let result: string = '';
         switch (command) {
             case 'profiles':
-                this._appModel.profiles.getProfileIds().forEach((profileId: string) => {
+                RobotManager.Instance.profiles.getProfileIds().forEach((profileId: string) => {
                     result += `${chalk.green(profileId)}\n`;
                 });
                 break;
@@ -640,7 +652,7 @@ export default class CommandParser extends EventEmitter {
                 });
                 break;
             case 'commands':
-                this._appModel.romCommands.commandNamesWithKeyCodes.forEach((commandName: string) => {
+                RobotManager.Instance.romCommands.commandNamesWithKeyCodes.forEach((commandName: string) => {
                     result += `${chalk.green(commandName)}\n`;
                 });
                 break;
@@ -656,20 +668,20 @@ export default class CommandParser extends EventEmitter {
         return result;
     }
 
-    parseConnectCommand(robotConfigId: string, args: string[]): Promise<any> {
+    parseConnectCommand(robotGroupName: string = '', args: string[]): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            this._appModel.connect(robotConfigId);
+            RobotManager.Instance.connect(robotGroupName);
             let result: any = '';
-            result = `${chalk.green('connected:')} ${robotConfigId}`;
+            result = `${chalk.green('connected:')} ${robotGroupName}`;
             resolve(result);
         });
     }
 
-    parseDisconnectCommand(robotConfigId: string, args: string[]): Promise<any> {
+    parseDisconnectCommand(robotGroupName: string = '', args: string[]): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            this._appModel.disconnect(robotConfigId);
+            RobotManager.Instance.disconnect(robotGroupName);
             let result: any = '';
-            result = `${chalk.green('disconnected:')} ${robotConfigId}`;
+            result = `${chalk.green('disconnected:')} ${robotGroupName}`;
             resolve(result);
         });
     }
