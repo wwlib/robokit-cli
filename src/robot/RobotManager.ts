@@ -1,4 +1,5 @@
 import {
+    Logger,
     Robot,
     Robots,
     RomCommand,
@@ -110,7 +111,7 @@ export default class RobotManager {
         // lookup skill [skillName]
         let skill: EnsembleSkill | undefined = EnsembleSkillManager.Instance.getEnsembleSkillWithId(skillName);
         if (skill) {
-            console.log(`${skillName} already started.`);
+            Logger.info([`RobotManager: start: ${skillName} already started.`]);
         } else {
             switch (skillName) {
                 case 'faces':
@@ -138,8 +139,13 @@ export default class RobotManager {
                 const profile: Profile | undefined = this._profiles.getActiveProfile();
                 if (robots && profile) {
                     robots.forEach((robot: Robot) => {
-                        console.log(`connect: robot: ${robot.name}`);
-                        robot.connect(profile);
+                        if (!robot.connected) {
+                            Logger.info([`RobotManager: connect: robot: ${robot.name}`]);
+                            robot.autoReconnect = true;
+                            robot.connect(profile);
+                        } else {
+                            Logger.info([`RobotManager: connect: already connected: ${robot.name}`]);
+                        }
                     });
                 }
             }
@@ -154,7 +160,8 @@ export default class RobotManager {
                 const robots: Robot[] | undefined = this._robots.getRobotListWithNames(group.robotNames);
                 if (robots) {
                     robots.forEach((robot: Robot) => {
-                        console.log(`disconnect: robot: ${robot.name}`);
+                        Logger.info([`RobotManager: disconnect: robot: ${robot.name}`]);
+                        robot.autoReconnect = false;
                         robot.disconnect();
                     });
                 }
@@ -170,7 +177,7 @@ export default class RobotManager {
                 const robots: Robot[] | undefined = this._robots.getRobotListWithNames(group.robotNames);
                 if (robots) {
                     robots.forEach((robot: Robot) => {
-                        console.log(`sendRomCommand: [${robot.name}] ${command.type}`);
+                        Logger.info([`RobotManager: sendRomCommand: [${robot.name}] ${command.type}`]);
                         robot.sendCommand(command);
                     });
                 }
@@ -201,12 +208,18 @@ export default class RobotManager {
         }
     }
 
-    status() {
-        return {
-            robotCount: this._robots.robotCount,
-            robotNames: this._robots.robotNames,
+    status(robotName?: string) {
+        let result: any = {
+            robotStates: this._robots.robotStates,
             ensembleSkills: EnsembleSkillManager.Instance.status(),
         }
+        if (robotName) {
+            const robot: Robot | undefined = this._robots.getRobotWithName(robotName);
+            if (robot) {
+                result = robot.status()
+            }
+        }
+        return result
     }
 
 }

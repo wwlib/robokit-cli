@@ -41,16 +41,15 @@
     "activeGroupName": "",
     "romCommands": [
         {
-            "name": "LookAt: Left",
-            "keyCode": "l",
+            "name": "look-left",
             "type": "lookAt",
             "data": {
                 "angle": 0.5
-            }
+            },
+            "keyCode": "l"
         },
         {
-            "name": "LookAt: Center",
-            "keyCode": "c",
+            "name": "look-center",
             "type": "lookAt",
             "data": {
                 "vector": [
@@ -58,31 +57,80 @@
                     0,
                     0.5
                 ]
-            }
+            },
+            "keyCode": "c"
         },
         {
-            "name": "LookAt: Right",
-            "keyCode": "r",
+            "name": "look-right",
             "type": "lookAt",
             "data": {
                 "angle": -0.5
-            }
+            },
+            "keyCode": "r"
         },
         {
-            "name": "LookAt: Behind",
-            "keyCode": "b",
+            "name": "look-back",
             "type": "lookAt",
             "data": {
                 "angle": 3.14159
-            }
+            },
+            "keyCode": "b"
         },
         {
-            "name": "TTS: Hello",
-            "keyCode": "h",
+            "name": "tts-hello",
             "type": "tts",
             "data": {
                 "text": "hello world"
-            }
+            },
+            "keyCode": "h"
+        },
+        {
+            "name": "attention-idle",
+            "type": "attention",
+            "data": {
+                "state": "IDLE"
+            },
+            "keyCode": ""
+        },
+        {
+            "name": "attention-off",
+            "type": "attention",
+            "data": {
+                "state": "OFF"
+            },
+            "keyCode": ""
+        },
+        {
+            "name": "faces-on",
+            "type": "faces",
+            "data": {
+                "state": "ON"
+            },
+            "keyCode": "f"
+        },
+        {
+            "name": "faces-off",
+            "type": "faces",
+            "data": {
+                "state": "OFF"
+            },
+            "keyCode": ""
+        },
+        {
+            "name": "ghosts",
+            "type": "tts",
+            "data": {
+                "text": "<anim name='Checking_04' nonBlocking='true'/> I'm pretty scared of ghosts"
+            },
+            "keyCode": "g"
+        },
+        {
+            "name": "emoji-clock",
+            "type": "tts",
+            "data": {
+                "text": "<anim name='emoji-clock-hf-01' nonBlocking='true'/>."
+            },
+            "keyCode": "t"
         }
     ]
 }

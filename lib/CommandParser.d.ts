@@ -8,7 +8,7 @@ export default class CommandParser extends EventEmitter {
     constructor(appModel: Model);
     get profile(): Profile | undefined;
     getConfig(): string;
-    getStatus(): string;
+    getStatus(robotName?: string): string;
     parseCommand(input: string): Promise<any>;
     execShellCommand(shellCommand: string): Promise<any>;
     parseSetCommand(command: string, args: string[]): string;

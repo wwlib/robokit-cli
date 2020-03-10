@@ -4,21 +4,24 @@ const fs = require('fs-extra');
 const osenv = require('osenv');
 const jsonfile = require('jsonfile');
 
-let configPath = path.resolve(osenv.home(), ".robokit-cli");
-let configFile = path.resolve(configPath, "config.json");
-
 export default class Config extends EventEmitter {
 
+    private _configDir: string = path.resolve(osenv.home(), ".robokit-cli");
+    private _configFile: string = path.resolve(this._configDir, "config.json");
     private _data: any;
     private _timestamp: number = 0;
 
     constructor() {
         super();
-        this._data = {};
+        this._data = {};    
     }
 
-    get configFile() {
-        return configFile;
+    get configDirectory(): string {
+        return this._configDir;
+    }
+
+    get configFile(): string {
+        return this._configFile;
     }
 
     get data(): any {
@@ -34,11 +37,11 @@ export default class Config extends EventEmitter {
     }
 
     load(cb: any){
-        fs.ensureDir(path.resolve(configPath), 0o755, (err: any) => {
+        fs.ensureDir(path.resolve(this._configDir), 0o755, (err: any) => {
             if (err) {
-                console.log(`error: ${configPath} cannot be found`)
+                console.log(`Config: error: ${this._configDir} cannot be found`)
             } else {
-                jsonfile.readFile(configFile, (err: any, obj: any) => {
+                jsonfile.readFile(this._configFile, (err: any, obj: any) => {
                     if (err) {
                         cb(err);
                     } else {
@@ -54,11 +57,11 @@ export default class Config extends EventEmitter {
     save(cb: any){
         this._timestamp = new Date().getTime();
         this._data.timestamp = this._timestamp;
-        fs.ensureDir(path.resolve(configPath), 0o755, (err: any) => {
+        fs.ensureDir(path.resolve(this._configDir), 0o755, (err: any) => {
             if (err) {
-                console.log(`error: ${configPath} cannot be found`)
+                console.log(`Config: error: ${this._configDir} cannot be found`)
             } else {
-                jsonfile.writeFile(configFile, this._data, {spaces: 2}, (err: any) => {
+                jsonfile.writeFile(this._configFile, this._data, {spaces: 2}, (err: any) => {
                     if (err) {
                         cb(err);
                     } else {

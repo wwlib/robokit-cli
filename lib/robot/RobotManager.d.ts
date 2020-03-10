@@ -31,9 +31,5 @@ export default class RobotManager {
     sendRomCommand(command: RomCommand, robotGroupName?: string): void;
     say(text: string, robotGroupName?: string): void;
     command(text: string, robotGroupName?: string): void;
-    status(): {
-        robotCount: number;
-        robotNames: string[];
-        ensembleSkills: any;
-    };
+    status(robotName?: string): any;
 }

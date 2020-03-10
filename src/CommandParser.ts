@@ -77,8 +77,8 @@ export default class CommandParser extends EventEmitter {
         return prettyjson.render(config, prettyjsonColors);
     }
 
-    getStatus(): string {
-        return prettyjson.render(this._appModel.status(), prettyjsonColors);
+    getStatus(robotName?: string): string {
+        return prettyjson.render(this._appModel.status(robotName), prettyjsonColors);
     }
 
     parseCommand(input: string): Promise<any> {
@@ -187,7 +187,8 @@ export default class CommandParser extends EventEmitter {
                     resolve(this.getConfig());
                     break;
                 case 'status':
-                    resolve(this.getStatus());
+                    subCommand = args[0];
+                    resolve(this.getStatus(subCommand));
                     break;
                 case 'set':
                     subCommand = args[0];
@@ -672,7 +673,7 @@ export default class CommandParser extends EventEmitter {
         return new Promise<any>((resolve, reject) => {
             RobotManager.Instance.connect(robotGroupName);
             let result: any = '';
-            result = `${chalk.green('connected:')} ${robotGroupName}`;
+            result = `${chalk.green('connect:')} ${robotGroupName}`;
             resolve(result);
         });
     }
@@ -681,7 +682,7 @@ export default class CommandParser extends EventEmitter {
         return new Promise<any>((resolve, reject) => {
             RobotManager.Instance.disconnect(robotGroupName);
             let result: any = '';
-            result = `${chalk.green('disconnected:')} ${robotGroupName}`;
+            result = `${chalk.green('disconnect:')} ${robotGroupName}`;
             resolve(result);
         });
     }

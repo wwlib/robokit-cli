@@ -9,11 +9,7 @@ export default class Model extends EventEmitter {
     saveConfig(): void;
     reloadConfig(): void;
     start(skillName: string): void;
-    status(): {
-        robotCount: number;
-        robotNames: string[];
-        ensembleSkills: any;
-    };
+    status(robotName?: string): any;
     getAppVerison(): string;
     dispose(): void;
 }
