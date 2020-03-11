@@ -48,6 +48,7 @@ export const help: any = {
     'say <text>': 'sends a tts rom command with the specified text',
     'config': 'shows current cli configuration',
     'status': 'shows current cli status',
+    's': 'shows current cli status',
     'clear': 'clears the console',
     'quit': 'quit',
     'q': 'quit',
@@ -158,6 +159,7 @@ export default class CommandParser extends EventEmitter {
                     subCommand = args[0];
                     resolve(this.parseEditCommand(subCommand, args.slice(1)));
                     break;
+                case 'add':
                 case 'new':
                     subCommand = args[0];
                     resolve(this.parseNewCommand(subCommand, args.slice(1)));
@@ -186,6 +188,7 @@ export default class CommandParser extends EventEmitter {
                 case 'config':
                     resolve(this.getConfig());
                     break;
+                case 's':
                 case 'status':
                     subCommand = args[0];
                     resolve(this.getStatus(subCommand));
@@ -450,7 +453,7 @@ export default class CommandParser extends EventEmitter {
             switch (command) {
                 case 'config':
                     this._appModel.saveConfig();
-                    result = `${chalk.green('saved')} profiles`;
+                    result = `${chalk.green('saved')} config`;
                     resolve(result);
                     break;
                 default:

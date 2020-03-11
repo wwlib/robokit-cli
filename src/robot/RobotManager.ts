@@ -14,6 +14,7 @@ import Profiles from '../model/Profiles';
 import RobotConfig from '../model/RobotConfig';
 import RobotConfigs from '../model/RobotConfigs'
 import FacesEnsembleSkill from '../rom/FacesEnsembleSkill';
+import IdentEnsembleSkill from '../rom/IdentEnsembleSkill';
 
 export default class RobotManager {
 
@@ -115,11 +116,22 @@ export default class RobotManager {
         } else {
             switch (skillName) {
                 case 'faces':
-                    skill = new FacesEnsembleSkill('faces', '');
+                    skill = new FacesEnsembleSkill('faces', 'launchFaces');
                     EnsembleSkillManager.Instance.addEnsembleSkill(skill);
                     this._robots.robotList.forEach((robot: Robot) => {
-                        if (skill) {
+                        if (skill && robot.connected) {
                             skill.addHub(robot.hub);
+                            robot.hub.registerSkill(skill);
+                        }
+                    });
+                    break;
+                case 'ident':
+                    skill = new IdentEnsembleSkill('ident', 'launchIdent');
+                    EnsembleSkillManager.Instance.addEnsembleSkill(skill);
+                    this._robots.robotList.forEach((robot: Robot) => {
+                        if (skill && robot.connected) {
+                            skill.addHub(robot.hub);
+                            robot.hub.registerSkill(skill);
                         }
                     });
                     break;

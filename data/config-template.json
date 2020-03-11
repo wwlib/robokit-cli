@@ -31,10 +31,9 @@
     ],
     "robotGroups": [
         {
-            "name": "@aj",
+            "name": "@default",
             "robots": [
-                "azure",
-                "jade"
+                "Default"
             ]
         }
     ],

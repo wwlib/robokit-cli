@@ -59,7 +59,7 @@ export default class RobotConfigHelper {
           type: 'list',
           name: 'confirm',
           choices: ['yes', 'no'],
-          message: `Confirm: Create this new robot config?:\n`,
+          message: `Confirm: ${this._editMode ? 'Edit' : 'Create'} this new robot config?:\n`,
         }
       ]
       if (!this._editMode) {

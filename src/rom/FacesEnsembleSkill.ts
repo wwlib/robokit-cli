@@ -1,11 +1,12 @@
-import { Robot, RobotIntentData, Hub, EnsembleSkill, EnsembleSkillManager, RobotDataStreamEvent, RomCommand } from 'robokit-rom';
+import { Robot, RobotIntentData, Hub, EnsembleSkill, EnsembleSkillManager, RobotDataStreamEvent, RomCommand, Logger } from 'robokit-rom';
 
 export default class FacesEnsembleSkill extends EnsembleSkill {
 
     private _dataStreamEventHandler: any = this.onDataStreamEvent.bind(this);
+    private _primaryHub: Hub | undefined = undefined;
 
     constructor(id: string, launchIntent: string) {
-        super (id, launchIntent);
+        super(id, launchIntent);
         this.running = true;
     }
 
@@ -16,82 +17,63 @@ export default class FacesEnsembleSkill extends EnsembleSkill {
 
     onDataStreamEvent(event: RobotDataStreamEvent) {
         if (event && event.type === 'faceGained') {
-            console.log(`${this.id}: onDataStreamEvent: ${event.robotId} -> ${event.type}`);
-            console.log(JSON.stringify(event, null, 2));
-            const entities: any = event.data;
-            const entity: any = entities[0];
-            const worldCoords = entity.WorldCoords
-            const command: RomCommand = new RomCommand('lookAt', 'lookAt', {
-                vector: [
-                    worldCoords[0],
-                    worldCoords[1],
-                    worldCoords[2]
-                  ]
-            });
-            const command2: RomCommand = new RomCommand('emoji', 'tts', {
-                text: "<anim name='emoji-clock-hf-01' nonBlocking='true'/>.",
-            });
-            console.log(command.json);
-            this.hubs.forEach((hub: Hub) => {
-                console.log(`sending command to: ${hub.robot.name}`);
-                hub.robot.sendCommand(command);
-                // hub.robot.sendCommand(command2);
-            });
+            Logger.info([`FacesEnsembleSkill: onDataStreamEvent: ${event.robotId} -> ${event.type}`]);
+            if (!this._primaryHub) {
+                const hub: Hub | undefined = this.hubMap.get(event.robotId);
+                if (hub) {
+                    Logger.info([`FacesEnsembleSkill: primary hub set to: ${event.robotId}`]);
+                    this._primaryHub = hub;
+                    setTimeout(() => {
+                        this._primaryHub = undefined;
+                        Logger.info([`FacesEnsembleSkill: primary reset`]);
+                        const attentionIdle: RomCommand = new RomCommand('attention-off', 'attention', {
+                            state: "IDLE",
+                        });
+                        this.hubs.forEach((hub: Hub) => {
+                            hub.robot.updateRobotStatusMessages(`FacesEnsembleSkill: sending RomCommand: ${attentionIdle.type}`);
+                            hub.robot.sendCommand(attentionIdle);
+                        });
+                    }, 10000); // wait 10 seconds to reset
+
+                    const entities: any = event.data;
+                    const entity: any = entities[0];
+                    const worldCoords = entity.WorldCoords
+                    const command: RomCommand = new RomCommand('lookAt', 'lookAt', {
+                        vector: [
+                            worldCoords[0],
+                            worldCoords[1],
+                            worldCoords[2]
+                        ]
+                    });
+                    const attentionOff: RomCommand = new RomCommand('attention-off', 'attention', {
+                        state: "OFF",
+                    });
+                    this.hubs.forEach((hub: Hub) => {
+                        hub.robot.updateRobotStatusMessages(`FacesEnsembleSkill: sending RomCommand: ${command.type}`);
+                        hub.robot.sendCommand(command);
+
+                        setImmediate(() => {
+                            hub.robot.updateRobotStatusMessages(`FacesEnsembleSkill: sending RomCommand: ${attentionOff.type}`);
+                            hub.robot.sendCommand(attentionOff);
+                        });
+                    });
+                }
+            }
         }
     }
 
-    launch(data: RobotIntentData) :void {
-    //     console.log(`FacesEnsembleSkill: launch: running: ${this.running}`);
-    //     if (!this.running) {
-    //         this.running = true;
-    //         let hubArray: Hub[] = this.getShuffledArrayOfHubs();
-    //         if (hubArray && hubArray.length > 0) {
-    //             let time: Date = new Date();
-    //             let hours: number = time.getHours(); //'9';
-    //             if (hours > 12) {
-    //                 hours -= 12;
-    //             }
-    //             let minutes: number =  time.getMinutes(); //'35'
-    //             let minutesPrefix: string = (minutes < 10) ? 'oh' : '';
-    //             let timePrompt: string = `<anim name='emoji-clock-hf-01' nonBlocking='true'/>The current time is ${hours} ${minutesPrefix} ${minutes}`;
-
-    //             let primaryHub: Hub | undefined = hubArray.shift();
-    //             if (primaryHub && primaryHub.robot) {
-    //                 let robot: Robot = primaryHub.robot;
-    //                 if (robot.requester) {
-    //                     let p = robot.requester.expression.say(timePrompt).complete;
-    //                     p.then( () => {
-    //                         // console.log(`FacesEnsembleSkill: launch: done`);
-    //                         this.running = false;
-    //                     })
-    //                     .catch((result: any) => {
-    //                         robot.updateRobotStatusMessages(JSON.stringify(result, null, 2))
-    //                     })
-    //                 }
-    //             }
-
-    //             hubArray.forEach((hub: Hub) => {
-    //                 if (hub && hub.robot) {
-    //                     let robot: Robot = hub.robot;
-    //                     if (robot.requester) {
-    //                         let prompt: string = `<break size='3.0'/><anim cat='shift' layers='body' nonBlocking='true'/><anim cat='happy' layers='screen' filter='&(eye-only)' nonBlocking='true' />.Yeah, that's right.`;
-    //                         // let p = robot.requester.play.say(`<break size='3.0'/><anim cat='shift' layers='body' nonBlocking='true'/><anim cat='happy' layers='screen' filter='&(eye-only)' nonBlocking='true' />.Yeah, that's right.`).complete;
-    //                         let p = robot.requester.expression.say(prompt).complete;
-    //                         p.then( () => {
-    //                             // console.log(`FacesEnsembleSkill: launch: done`);
-    //                         })
-    //                         .catch((result: any) => {
-    //                             robot.updateRobotStatusMessages(JSON.stringify(result, null, 2))
-    //                         })
-    //                     }
-    //                 }
-    //             });
-    //         }
-    //     }
+    launch(data: RobotIntentData): void {
     }
 
     tick(frameTime: number, elapsedTime: number): void {
 
+    }
+
+    dispose() {
+        const hubs: Hub[] = Array.from(this.hubMap.values());
+        hubs.forEach((hub: Hub) => {
+            hub.removeListener('dataStreamEvent', this._dataStreamEventHandler);
+        });
     }
 
 }
