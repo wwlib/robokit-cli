@@ -15,29 +15,6 @@ export default class IdentEnsembleSkill extends EnsembleSkill {
     }
 
     onDataStreamEvent(event: RobotDataStreamEvent) {
-        if (event && event.type === 'faceGained') {
-            console.log(`${this.id}: onDataStreamEvent: ${event.robotId} -> ${event.type}`);
-            console.log(JSON.stringify(event, null, 2));
-            const entities: any = event.data;
-            const entity: any = entities[0];
-            const worldCoords = entity.WorldCoords
-            const command: RomCommand = new RomCommand('lookAt', 'lookAt', {
-                vector: [
-                    worldCoords[0],
-                    worldCoords[1],
-                    worldCoords[2]
-                ]
-            });
-            const command2: RomCommand = new RomCommand('emoji', 'tts', {
-                text: "<anim name='emoji-clock-hf-01' nonBlocking='true'/>.",
-            });
-            console.log(command.json);
-            this.hubs.forEach((hub: Hub) => {
-                console.log(`sending command to: ${hub.robot.name}`);
-                hub.robot.sendCommand(command);
-                // hub.robot.sendCommand(command2);
-            });
-        }
     }
 
     launch(data: RobotIntentData): void {
