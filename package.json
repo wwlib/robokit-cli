@@ -37,7 +37,7 @@
     "request": "^2.83.0",
     "request-promise": "^4.2.4",
     "robokit-rom": "git+ssh://git@github.com:wwlib/robokit-rom.git#v0.0.3",
-    "shelljs": "^0.8.3",
+    "shelljs": "^0.8.5",
     "url-join": "^4.0.1"
   },
   "devDependencies": {
